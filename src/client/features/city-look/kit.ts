@@ -1,16 +1,26 @@
 /**
  * Shared helpers for city-floor cartoon set dressing.
  *
- * North-wall boards (Scenes / Practice / Phrases) sit roughly u ∈ [-15, 7]. Keep big murals and
- * lanterns off that strip so they don't read as charts/tables over the boards.
+ * North cork boards (Scenes / Practice / Phrases) cover roughly u ∈ [-15, 7] up to ~y 4.1.
+ * West windows sit at u ∈ {−9, −3, 3} (width 3) and the exit at u 6.5 — keep mid-height props
+ * off those openings. Lanterns at y≥4.2 clear the window heads.
  */
 import * as THREE from 'three';
 import { wallPose, type WallId } from '../../../shared/decor';
 import { mesh, toon } from '../../world/toon';
 
-/** North-wall u must be west of this or east of NORTH_BOARD_EAST to clear the cork boards. */
-export const NORTH_BOARD_WEST = -15.2;
-export const NORTH_BOARD_EAST = 8.5;
+/** Far west of the Scenes board — clear for a landmark. */
+export const NORTH_WEST_CLEAR = -16.2;
+/** East of the Phrase wall, before the gong — clear for a landmark. */
+export const NORTH_EAST_CLEAR = 9.2;
+/** Centerline above the three boards for a skyline strip (under the ceiling). */
+export const NORTH_ABOVE_BOARDS_Y = 5.35;
+
+/** West-wall u centers on solid plaster (between windows / clear of the exit). */
+export const WEST_SOLID = [-12.8, -6.0, 0.0, 9.8] as const;
+
+/** South-wall u centers on solid plaster (between windows / balcony door / loft). */
+export const SOUTH_SOLID = [-16.5, -11.5, 5.5, 12.5] as const;
 
 export function disposeGroup(g: THREE.Object3D) {
   g.traverse((o) => {
@@ -52,7 +62,7 @@ export function banner(wall: WallId, u: number, color: string, w = 0.9, h = 1.4)
   return onWall(wall, u, 3.4, g);
 }
 
-/** String of round lanterns along a wall. */
+/** String of round lanterns along a wall (high enough to clear window heads). */
 export function lanterns(wall: WallId, us: number[], colors: string[]) {
   const root = new THREE.Group();
   us.forEach((u, i) => {

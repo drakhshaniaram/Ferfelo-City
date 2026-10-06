@@ -1,32 +1,45 @@
 import * as THREE from 'three';
-import { NORTH_BOARD_EAST, NORTH_BOARD_WEST, banner, box, cyl, lanterns, mesh, onWall, rug, toon } from './kit';
+import {
+  NORTH_ABOVE_BOARDS_Y,
+  NORTH_EAST_CLEAR,
+  NORTH_WEST_CLEAR,
+  SOUTH_SOLID,
+  WEST_SOLID,
+  banner,
+  box,
+  cyl,
+  lanterns,
+  mesh,
+  onWall,
+  rug,
+  toon,
+} from './kit';
 
 /** Hamburg: Speicherstadt brick, ships, anchors, fish-stand vibe. */
 export function hamburgLook(): THREE.Group {
   const root = new THREE.Group();
 
-  // Brick warehouse row on the south wall — north stays clear for the boards.
   const brick = new THREE.Group();
   for (let i = 0; i < 6; i++) {
-    const x = (i - 2.5) * 1.15;
-    brick.add(box(1.05, 1.7, 0.24, '#c45c3a', x, 0, 0));
-    for (let r = 0; r < 4; r++) {
-      brick.add(box(0.75, 0.2, 0.06, '#8fd3ff', x, -0.55 + r * 0.38, 0.14));
+    const x = (i - 2.5) * 0.95;
+    brick.add(box(0.88, 1.15, 0.2, '#c45c3a', x, 0, 0));
+    for (let r = 0; r < 3; r++) {
+      brick.add(box(0.62, 0.16, 0.05, '#8fd3ff', x, -0.35 + r * 0.32, 0.12));
     }
-    brick.add(box(1.1, 0.14, 0.3, '#3d405b', x, 0.92, 0));
-    for (let r = 0; r < 5; r++) brick.add(box(1.05, 0.03, 0.02, '#8b3a22', x, -0.7 + r * 0.35, 0.13));
+    brick.add(box(0.92, 0.12, 0.24, '#3d405b', x, 0.65, 0));
+    for (let r = 0; r < 4; r++) brick.add(box(0.88, 0.025, 0.02, '#8b3a22', x, -0.5 + r * 0.3, 0.11));
   }
-  brick.add(box(7.2, 0.2, 0.4, '#4a6fa5', 0, -1.05, 0.1));
-  root.add(onWall('south', 0, 3.15, brick));
+  brick.add(box(6.0, 0.14, 0.32, '#4a6fa5', 0, -0.75, 0.08));
+  root.add(onWall('north', -4, NORTH_ABOVE_BOARDS_Y, brick));
 
   const elphi = new THREE.Group();
   elphi.add(box(2.4, 0.9, 0.3, '#dce3ea', 0, 0, 0));
   for (let i = 0; i < 5; i++) {
     elphi.add(box(0.35, 0.15 + i * 0.08, 0.12, '#fffaf3', (i - 2) * 0.4, 0.55 + i * 0.02, 0.1));
   }
-  root.add(onWall('north', NORTH_BOARD_WEST - 0.8, 2.6, elphi));
+  root.add(onWall('north', NORTH_WEST_CLEAR, 2.6, elphi));
 
-  for (const u of [-5, 2]) {
+  for (const u of [WEST_SOLID[1], WEST_SOLID[3]]) {
     const ship = new THREE.Group();
     ship.add(box(1.8, 0.4, 0.4, '#2b2d42', 0, 0, 0));
     ship.add(box(1.0, 0.4, 0.32, '#ef476f', 0.15, 0.35, 0));
@@ -41,7 +54,7 @@ export function hamburgLook(): THREE.Group {
   anchor.add(box(0.65, 0.12, 0.12, '#4a5568', 0, -0.3, 0));
   anchor.add(box(0.12, 0.35, 0.12, '#4a5568', -0.28, -0.4, 0));
   anchor.add(box(0.12, 0.35, 0.12, '#4a5568', 0.28, -0.4, 0));
-  root.add(onWall('east', 2, 2.0, anchor));
+  root.add(onWall('east', -11.5, 2.0, anchor));
 
   const fish = new THREE.Group();
   fish.add(box(1.4, 0.7, 0.5, '#fffaf3', 0, 0.4, 0));
@@ -51,10 +64,10 @@ export function hamburgLook(): THREE.Group {
   fish.position.set(14, 0, -11);
   root.add(fish);
 
-  root.add(banner('south', -7, '#ef476f'));
-  root.add(banner('south', -5, '#2b2d42'));
-  root.add(lanterns('east', [-6, -2, 2, 6], ['#ffd166', '#ef476f', '#8fd3ff', '#ffd166']));
-  root.add(lanterns('north', [NORTH_BOARD_WEST - 1.4, NORTH_BOARD_EAST + 2, NORTH_BOARD_EAST + 4], ['#ffd166', '#ef476f', '#8fd3ff']));
+  root.add(banner('south', SOUTH_SOLID[0], '#ef476f'));
+  root.add(banner('south', SOUTH_SOLID[1], '#2b2d42'));
+  root.add(lanterns('east', [-11, -5, 5, 10], ['#ffd166', '#ef476f', '#8fd3ff', '#ffd166']));
+  root.add(lanterns('north', [NORTH_WEST_CLEAR, NORTH_EAST_CLEAR, NORTH_EAST_CLEAR + 2.2], ['#ffd166', '#ef476f', '#8fd3ff']));
 
   root.add(rug(1.5, 1.0, '#c45c3a', -12, -10));
   root.add(rug(1.2, 0.9, '#4a6fa5', 12, 10));
@@ -72,7 +85,7 @@ export function hamburgLook(): THREE.Group {
   crane.add(box(0.15, 2.0, 0.15, '#ffd166', 0, 0, 0));
   crane.add(box(1.6, 0.12, 0.12, '#ffd166', 0.6, 0.9, 0));
   crane.add(box(0.08, 0.6, 0.08, '#2b2d42', 1.3, 0.55, 0));
-  root.add(onWall('west', 8, 2.8, crane));
+  root.add(onWall('south', SOUTH_SOLID[3], 2.8, crane));
 
   return root;
 }
