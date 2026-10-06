@@ -4,6 +4,7 @@ import {
   FELLOW_CATALOG,
   FELLOW_IDS,
   LEARNER_LANGUAGES,
+  isRtlLanguage,
   type FellowId,
   type LearnerLanguage,
   type LearnerProfile,
@@ -109,7 +110,7 @@ export function openFellowHire(opts: FellowHireOpts) {
 }
 
 function languageSelect(value: string, ariaLabel: string): HTMLSelectElement {
-  const sel = h('select', { 'aria-label': ariaLabel }) as HTMLSelectElement;
+  const sel = h('select', { 'aria-label': ariaLabel, dir: isRtlLanguage(value) ? 'rtl' : 'ltr' }) as HTMLSelectElement;
   for (const lang of LEARNER_LANGUAGES) {
     const opt = h('option', { value: lang }, lang) as HTMLOptionElement;
     if (lang === value) opt.selected = true;
@@ -119,6 +120,9 @@ function languageSelect(value: string, ariaLabel: string): HTMLSelectElement {
   if (value && !(LEARNER_LANGUAGES as readonly string[]).includes(value)) {
     sel.prepend(h('option', { value, selected: 'true' }, value) as HTMLOptionElement);
   }
+  sel.addEventListener('change', () => {
+    sel.dir = isRtlLanguage(sel.value) ? 'rtl' : 'ltr';
+  });
   return sel;
 }
 

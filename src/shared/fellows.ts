@@ -212,6 +212,16 @@ export function isLearnerLanguage(value: unknown): value is LearnerLanguage {
   return typeof value === 'string' && (LEARNER_LANGUAGES as readonly string[]).includes(value);
 }
 
+/** Languages that read right-to-left in the academy UI. */
+export function isRtlLanguage(language: string): boolean {
+  return (
+    language === 'Persian' ||
+    language === 'Central Kurdish (Sorani)' ||
+    language === 'Arabic' ||
+    language === 'Hebrew'
+  );
+}
+
 /** Map free text / old saves onto a catalog label when we recognize it. */
 export function resolveLearnerLanguage(raw: string | undefined | null, fallback: LearnerLanguage): LearnerLanguage {
   if (typeof raw !== 'string') return fallback;
@@ -241,7 +251,7 @@ export function fellowBrief(fellowId: FellowId, learner: LearnerProfile, sceneNo
   const target = learner.targetLanguage;
   const targetPct = Math.round(level.targetShare * 100);
   const nativePct = Math.round(level.nativeShare * 100);
-  const rtlNative = native === 'Persian' || native === 'Central Kurdish (Sorani)' || native === 'Arabic' || native === 'Hebrew';
+  const rtlNative = isRtlLanguage(native);
   return [
     `You are ${fellow.name}, a language fellow in Ferfelo Academy — a lively 3D learning space, not a coding office.`,
     `Your role: ${fellow.role}.`,

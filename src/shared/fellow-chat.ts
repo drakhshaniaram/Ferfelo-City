@@ -213,3 +213,14 @@ function looksLikeStage(p: string): boolean {
   }
   return false;
 }
+
+/** Hebrew, Arabic, and Persian-block letters (covers Persian + Sorani). */
+const RTL_CHAR = /[\u0590-\u05FF\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/;
+const LTR_CHAR = /[A-Za-z\u00C0-\u024F]/;
+
+/** Paragraph direction for chat optics — RTL when the text has strong RTL letters. */
+export function textDirection(text: string): 'rtl' | 'ltr' {
+  if (RTL_CHAR.test(text)) return 'rtl';
+  if (LTR_CHAR.test(text)) return 'ltr';
+  return 'ltr';
+}

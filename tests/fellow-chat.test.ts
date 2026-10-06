@@ -7,7 +7,9 @@ import {
   parseSpeechParts,
   rejoinSoftWraps,
   stripFellowBriefEcho,
+  textDirection,
 } from '../src/shared/fellow-chat.js';
+import { isRtlLanguage } from '../src/shared/fellows.js';
 
 test('chrome lines from Cursor TUI are recognized', () => {
   assert.equal(isFellowChatChrome('⠛⠄ Working'), true);
@@ -237,6 +239,15 @@ test('strips Cursor banner and echoed hire brief from Lena opening', () => {
   assert.match(reply, /Lena winkt dir zu/);
   assert.match(reply, /Willkommen/);
   assert.match(reply, /Hallo, ich bin/);
+});
+
+test('textDirection and isRtlLanguage recognize Persian and Sorani', () => {
+  assert.equal(textDirection('سلام، بیا برویم.'), 'rtl');
+  assert.equal(textDirection('Joost schüttelt den Regen.'), 'ltr');
+  assert.equal(textDirection('Salam! Ich bin Joost.'), 'ltr');
+  assert.equal(isRtlLanguage('Persian'), true);
+  assert.equal(isRtlLanguage('Central Kurdish (Sorani)'), true);
+  assert.equal(isRtlLanguage('German'), false);
 });
 
 test('rejoinSoftWraps and stripFellowBriefEcho are composable', () => {

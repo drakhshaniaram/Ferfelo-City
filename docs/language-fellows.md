@@ -37,6 +37,8 @@ The fellow sits down under their catalog name (Lena, Marco, …) with a brief th
 
 Stage tips and explanations always use the **native** language you picked (including Persian / Sorani script). Spoken practice lines use the **learning** language. Re-invite a fellow after changing languages so the new brief applies.
 
+Persian, Central Kurdish (Sorani), Arabic, and Hebrew render **RTL** in chat (tips, speech bars, and the compose box). Latin practice lines inside a turn stay LTR.
+
 ## Code
 
 - Catalog, language list, and briefs: `src/shared/fellows.ts`

@@ -1,10 +1,11 @@
 import './chat.css';
 import type { Net } from '../../net';
 import type { ServerMsg, WorkerInfo, WorkerStatus } from '../../../shared/protocol';
-import { FELLOW_CATALOG } from '../../../shared/fellows';
-import { fellowReplyFromTerminal, parseFellowOptics } from '../../../shared/fellow-chat';
+import { FELLOW_CATALOG, isRtlLanguage } from '../../../shared/fellows';
+import { fellowReplyFromTerminal, parseFellowOptics, textDirection } from '../../../shared/fellow-chat';
 import { isAsleep, isBusy } from '../../../shared/status';
 import { store } from '../../state';
+import { loadLearner } from '../../state/learner';
 import { h, openModal, STATUS_LABEL, type Modal } from '../../ui/dom';
 import { dictateField } from '../../ui/dictate';
 import {
@@ -20,17 +21,21 @@ function renderFellowOptics(text: string): HTMLElement {
   const root = h('div.fellow-optics');
   const segs = parseFellowOptics(text);
   if (!segs.length) {
-    root.append(h('p.fellow-whisper', {}, '…'));
+    root.append(h('p.fellow-whisper', { dir: 'auto' }, '…'));
     return root;
   }
   for (const seg of segs) {
     if (seg.kind === 'whisper') {
-      root.append(h('p.fellow-whisper', {}, seg.text));
+      root.append(h('p.fellow-whisper', { dir: textDirection(seg.text) }, seg.text));
       continue;
     }
-    const quote = h('blockquote.fellow-speech');
+    const spoken = seg.parts.map((p) => p.text).join(' ');
+    const quote = h('blockquote.fellow-speech', { dir: textDirection(spoken) });
     for (const part of seg.parts) {
-      quote.append(part.kind === 'aside' ? h('em.fellow-aside', {}, part.text) : h('span.fellow-say', {}, part.text));
+      const dir = textDirection(part.text);
+      quote.append(
+        part.kind === 'aside' ? h('em.fellow-aside', { dir }, part.text) : h('span.fellow-say', { dir }, part.text),
+      );
       quote.append(document.createTextNode(' '));
     }
     root.append(quote);
@@ -40,7 +45,8 @@ function renderFellowOptics(text: string): HTMLElement {
 
 function bubbleBody(role: Role, text: string, live?: boolean): HTMLElement {
   if (role === 'fellow') return renderFellowOptics(text || (live ? '…' : ''));
-  return h('div.text', {}, text || (live ? '…' : ''));
+  const body = text || (live ? '…' : '');
+  return h('div.text', { dir: textDirection(body) }, body);
 }
 
 type Role = FellowChatBubble['role'];
@@ -89,10 +95,14 @@ export function openFellowChat(net: Net, workerId: string, opts: FellowChatOpts)
   const thread = h('div.fellow-chat-thread', { role: 'log', 'aria-live': 'polite', 'aria-relevant': 'additions' });
   const statusPill = h('span.pill', {});
   const typing = h('div.fellow-chat-typing.hidden', {}, `${fellow.name} is writing…`);
+  const learner = loadLearner();
+  const preferRtl = isRtlLanguage(learner.nativeLanguage) || isRtlLanguage(learner.targetLanguage);
   const input = h('textarea', {
     rows: 2,
     placeholder: `Message ${fellow.name}…`,
     'aria-label': `Message ${fellow.name}`,
+    dir: preferRtl ? 'rtl' : 'auto',
+    lang: preferRtl && isRtlLanguage(learner.nativeLanguage) ? langTag(learner.nativeLanguage) : undefined,
   }) as HTMLTextAreaElement;
   const sendBtn = h('button.btn.primary', { type: 'submit' }, 'Send') as HTMLButtonElement;
   const termBtn = h('button.btn', { type: 'button', title: 'Open the raw agent terminal' }, '🖥️ Terminal');
@@ -216,6 +226,9 @@ export function openFellowChat(net: Net, workerId: string, opts: FellowChatOpts)
   input.addEventListener('input', () => {
     const w = store.workers.get(workerId);
     sendBtn.disabled = !w || isAsleep(w.status) || !input.value.trim();
+    // Flip as they type so mixed sessions stay comfortable.
+    if (input.value.trim()) input.dir = textDirection(input.value);
+    else input.dir = preferRtl ? 'rtl' : 'auto';
   });
   input.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) {
@@ -267,4 +280,12 @@ export function openFellowChat(net: Net, workerId: string, opts: FellowChatOpts)
     thread.scrollTop = thread.scrollHeight;
     input.focus();
   }, 30);
+}
+
+function langTag(language: string): string | undefined {
+  if (language === 'Persian') return 'fa';
+  if (language === 'Central Kurdish (Sorani)') return 'ckb';
+  if (language === 'Arabic') return 'ar';
+  if (language === 'Hebrew') return 'he';
+  return undefined;
 }

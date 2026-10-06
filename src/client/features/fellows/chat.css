@@ -83,6 +83,10 @@
   font-size: 15px;
   font-weight: 700;
   line-height: 1.4;
+  unicode-bidi: plaintext;
+}
+.fellow-bubble .text[dir='rtl'] {
+  text-align: right;
 }
 .fellow-optics {
   display: flex;
@@ -97,6 +101,11 @@
   line-height: 1.45;
   color: #6b635c;
   letter-spacing: 0.01em;
+  unicode-bidi: plaintext;
+}
+.fellow-whisper[dir='rtl'] {
+  letter-spacing: 0;
+  text-align: right;
 }
 .fellow-speech {
   margin: 0;
@@ -106,6 +115,14 @@
   flex-wrap: wrap;
   align-items: baseline;
   gap: 0.15em 0.25em;
+  unicode-bidi: plaintext;
+}
+.fellow-speech[dir='rtl'] {
+  padding: 4px 12px 4px 0;
+  border-left: none;
+  border-right: 3px solid #3b6fd9;
+  justify-content: flex-end;
+  text-align: right;
 }
 .fellow-say {
   font-style: normal;
@@ -181,6 +198,10 @@
   border: 3px solid var(--ink);
   border-radius: 14px;
   background: #fff;
+  unicode-bidi: plaintext;
+}
+.fellow-chat-compose textarea[dir='rtl'] {
+  text-align: right;
 }
 @media (max-width: 640px) {
   .modal.fellow-chat {
