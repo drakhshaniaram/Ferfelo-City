@@ -2,22 +2,19 @@
  * Shared helpers for city-floor cartoon set dressing.
  *
  * North cork boards (Scenes / Practice / Phrases) cover roughly u ∈ [-15, 7] up to ~y 4.1.
- * West windows sit at u ∈ {−9, −3, 3} (width 3) and the exit at u 6.5 — keep mid-height props
- * off those openings. Lanterns at y≥4.2 clear the window heads.
+ * The west wall is windows + machine monitor + ladder + exit — never hang mid-height props there.
+ * Put bikes/ships/etc on the floor in corners instead.
  */
 import * as THREE from 'three';
 import { wallPose, type WallId } from '../../../shared/decor';
 import { mesh, toon } from '../../world/toon';
 
-/** Far west of the Scenes board — clear for a landmark. */
+/** Far west of the Scenes board — clear for a landmark (high on the wall). */
 export const NORTH_WEST_CLEAR = -16.2;
 /** East of the Phrase wall, before the gong — clear for a landmark. */
 export const NORTH_EAST_CLEAR = 9.2;
 /** Centerline above the three boards for a skyline strip (under the ceiling). */
 export const NORTH_ABOVE_BOARDS_Y = 5.35;
-
-/** West-wall u centers on solid plaster (between windows / clear of the exit). */
-export const WEST_SOLID = [-12.8, -6.0, 0.0, 9.8] as const;
 
 /** South-wall u centers on solid plaster (between windows / balcony door / loft). */
 export const SOUTH_SOLID = [-16.5, -11.5, 5.5, 12.5] as const;

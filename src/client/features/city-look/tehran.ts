@@ -4,7 +4,6 @@ import {
   NORTH_EAST_CLEAR,
   NORTH_WEST_CLEAR,
   SOUTH_SOLID,
-  WEST_SOLID,
   banner,
   box,
   cyl,
@@ -16,7 +15,7 @@ import {
   toon,
 } from './kit';
 
-/** Tehran: turquoise tile, mountains, bazaar stalls, tea. */
+/** Tehran: tile mural above boards; peaks/Milad on the floor — west glass left alone. */
 export function tehranLook(): THREE.Group {
   const root = new THREE.Group();
 
@@ -43,14 +42,15 @@ export function tehranLook(): THREE.Group {
   const top = mesh(new THREE.TorusGeometry(0.55, 0.12, 8, 20, Math.PI), toon('#f3e0c8'), 0, 0.85, 0, false);
   top.rotation.z = Math.PI;
   azadi.add(top);
-  root.add(onWall('north', NORTH_WEST_CLEAR, 2.7, azadi));
+  root.add(onWall('north', NORTH_WEST_CLEAR, 4.6, azadi));
 
   const peaks = new THREE.Group();
-  peaks.add(mesh(new THREE.ConeGeometry(0.8, 1.3, 4), toon('#8b9bb4'), -0.9, 0, 0, false));
-  peaks.add(mesh(new THREE.ConeGeometry(1.1, 1.8, 4), toon('#6e7f99'), 0.4, 0.15, 0, false));
-  peaks.add(mesh(new THREE.ConeGeometry(0.55, 0.9, 4), toon('#a8b5c4'), 1.4, -0.1, 0, false));
-  peaks.add(mesh(new THREE.ConeGeometry(0.4, 0.45, 4), toon('#fffaf3'), 0.4, 0.95, 0, false));
-  root.add(onWall('west', WEST_SOLID[2], 2.2, peaks));
+  peaks.add(mesh(new THREE.ConeGeometry(0.8, 1.3, 4), toon('#8b9bb4'), -0.9, 0.65, 0, false));
+  peaks.add(mesh(new THREE.ConeGeometry(1.1, 1.8, 4), toon('#6e7f99'), 0.4, 0.9, 0, false));
+  peaks.add(mesh(new THREE.ConeGeometry(0.55, 0.9, 4), toon('#a8b5c4'), 1.4, 0.45, 0, false));
+  peaks.add(mesh(new THREE.ConeGeometry(0.4, 0.45, 4), toon('#fffaf3'), 0.4, 1.7, 0, false));
+  peaks.position.set(-15.0, 0, -10.0);
+  root.add(peaks);
 
   for (const u of [-11.5, 10]) {
     const stall = new THREE.Group();
@@ -82,7 +82,7 @@ export function tehranLook(): THREE.Group {
   root.add(banner('south', SOUTH_SOLID[0], '#0f9b8e'));
   root.add(banner('south', SOUTH_SOLID[1], '#ffe066'));
   root.add(lanterns('north', [NORTH_WEST_CLEAR, NORTH_EAST_CLEAR, NORTH_EAST_CLEAR + 2.2], ['#ffe066', '#c86a3a', '#14b8a6']));
-  root.add(lanterns('west', [WEST_SOLID[0], WEST_SOLID[1], WEST_SOLID[3]], ['#ffe066', '#c86a3a', '#14b8a6']));
+  root.add(lanterns('south', [SOUTH_SOLID[2], SOUTH_SOLID[3]], ['#ffe066', '#c86a3a']));
 
   root.add(rug(1.5, 1.1, '#0f9b8e', -12, -10));
   root.add(rug(1.3, 1.0, '#c86a3a', 12, 10));
@@ -90,10 +90,11 @@ export function tehranLook(): THREE.Group {
   root.add(rug(1.4, 1.0, '#8b3a22', 12, -10));
 
   const milad = new THREE.Group();
-  milad.add(cyl(0.08, 0.2, 1.8, '#f3e0c8', 0, 0, 0));
-  milad.add(box(0.5, 0.25, 0.5, '#14b8a6', 0, 0.7, 0));
-  milad.add(sphere(0.12, '#ffe066', 0, 1.0, 0));
-  root.add(onWall('south', SOUTH_SOLID[3], 2.6, milad));
+  milad.add(cyl(0.08, 0.2, 1.8, '#f3e0c8', 0, 0.9, 0));
+  milad.add(box(0.5, 0.25, 0.5, '#14b8a6', 0, 1.6, 0));
+  milad.add(sphere(0.12, '#ffe066', 0, 1.9, 0));
+  milad.position.set(12.5, 0, 10.5);
+  root.add(milad);
 
   return root;
 }

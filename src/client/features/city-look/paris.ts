@@ -4,7 +4,6 @@ import {
   NORTH_EAST_CLEAR,
   NORTH_WEST_CLEAR,
   SOUTH_SOLID,
-  WEST_SOLID,
   banner,
   box,
   cyl,
@@ -16,7 +15,7 @@ import {
   toon,
 } from './kit';
 
-/** Paris: façades, café awnings, tower, metro sign, café table. */
+/** Paris: façades above boards; awnings as floor café props — no west-wall glass hangings. */
 export function parisLook(): THREE.Group {
   const root = new THREE.Group();
 
@@ -37,15 +36,22 @@ export function parisLook(): THREE.Group {
   tower.add(box(0.18, 2.6, 0.18, '#5c4033', 0, 0, 0));
   for (const y of [0.4, 0.95, 1.45, 1.9]) tower.add(box(0.85 - y * 0.2, 0.08, 0.08, '#5c4033', 0, y, 0));
   tower.add(mesh(new THREE.ConeGeometry(0.14, 0.4, 4), toon('#5c4033'), 0, 1.5, 0, false));
-  root.add(onWall('north', NORTH_WEST_CLEAR, 3.2, tower));
+  root.add(onWall('north', NORTH_WEST_CLEAR, 4.8, tower));
 
-  for (const u of [WEST_SOLID[0], WEST_SOLID[1], WEST_SOLID[3]]) {
+  // Striped awning as a floor café stand (not hung on west glass).
+  for (const [x, z] of [
+    [-15.0, -10.2],
+    [14.2, 10.0],
+  ] as const) {
     const awning = new THREE.Group();
     for (let i = 0; i < 7; i++) {
-      awning.add(box(0.26, 0.55, 0.08, i % 2 ? '#e63946' : '#fffaf3', (i - 3) * 0.26, 0, 0));
+      awning.add(box(0.26, 0.55, 0.08, i % 2 ? '#e63946' : '#fffaf3', (i - 3) * 0.26, 1.1, 0));
     }
-    awning.add(box(1.9, 0.08, 0.1, '#2b2d42', 0, 0.32, 0));
-    root.add(onWall('west', u, 2.35, awning));
+    awning.add(box(1.9, 0.08, 0.1, '#2b2d42', 0, 1.42, 0));
+    awning.add(box(0.08, 1.0, 0.08, '#5c4033', -0.85, 0.5, 0.2));
+    awning.add(box(0.08, 1.0, 0.08, '#5c4033', 0.85, 0.5, 0.2));
+    awning.position.set(x, 0, z);
+    root.add(awning);
   }
 
   const metro = new THREE.Group();
@@ -74,7 +80,7 @@ export function parisLook(): THREE.Group {
   root.add(banner('south', SOUTH_SOLID[2] + 1.8, '#fffaf3'));
   root.add(banner('south', SOUTH_SOLID[3], '#ed2939'));
   root.add(lanterns('north', [NORTH_WEST_CLEAR, NORTH_EAST_CLEAR, NORTH_EAST_CLEAR + 2.2], ['#e6b422', '#e63946', '#ffe066']));
-  root.add(lanterns('west', [WEST_SOLID[0], WEST_SOLID[2], WEST_SOLID[3]], ['#e6b422', '#e63946', '#ffe066']));
+  root.add(lanterns('south', [SOUTH_SOLID[0], SOUTH_SOLID[1], SOUTH_SOLID[3]], ['#e6b422', '#e63946', '#ffe066']));
 
   root.add(rug(1.4, 1.0, '#e63946', -12, -10));
   root.add(rug(1.2, 0.9, '#002395', 12, 10));

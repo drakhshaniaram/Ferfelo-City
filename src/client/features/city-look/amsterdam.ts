@@ -4,7 +4,6 @@ import {
   NORTH_EAST_CLEAR,
   NORTH_WEST_CLEAR,
   SOUTH_SOLID,
-  WEST_SOLID,
   banner,
   box,
   cyl,
@@ -16,11 +15,23 @@ import {
   toon,
 } from './kit';
 
-/** Amsterdam: canal row, bikes, tulips, orange banners, cobble rugs. */
+/** A parked bike on the floor (west wall is windows + monitor + ladder — no mid-height hangings). */
+function floorBike(x: number, z: number, rotY: number) {
+  const bike = new THREE.Group();
+  bike.add(mesh(new THREE.TorusGeometry(0.26, 0.035, 8, 16), toon('#2b2d42'), -0.32, 0.26, 0, false));
+  bike.add(mesh(new THREE.TorusGeometry(0.26, 0.035, 8, 16), toon('#2b2d42'), 0.32, 0.26, 0, false));
+  bike.add(box(0.65, 0.05, 0.05, '#ff5a1f', 0, 0.36, 0));
+  bike.add(box(0.06, 0.32, 0.05, '#ff5a1f', -0.18, 0.52, 0));
+  bike.add(box(0.2, 0.04, 0.04, '#2b2d42', 0.28, 0.54, 0));
+  bike.position.set(x, 0, z);
+  bike.rotation.y = rotY;
+  return bike;
+}
+
+/** Amsterdam: canal row above the boards, floor bikes, tulips, banners — nothing on west glass. */
 export function amsterdamLook(): THREE.Group {
   const root = new THREE.Group();
 
-  // Canal-house skyline above the cork boards (not on them, not in south windows).
   const houses = new THREE.Group();
   const colors = ['#ff6b4a', '#5ec4e0', '#ffe066', '#7bd389', '#c77dff', '#ff8fab', '#4cc9f0'];
   for (let i = 0; i < 7; i++) {
@@ -40,18 +51,12 @@ export function amsterdamLook(): THREE.Group {
   bridge.add(box(0.12, 0.7, 0.12, '#8b7355', -0.9, 0.35, 0));
   bridge.add(box(0.12, 0.7, 0.12, '#8b7355', 0.9, 0.35, 0));
   bridge.add(mesh(new THREE.TorusGeometry(0.9, 0.06, 8, 20, Math.PI), toon('#8b7355'), 0, 0.35, 0, false));
-  root.add(onWall('north', NORTH_WEST_CLEAR, 2.4, bridge));
+  root.add(onWall('north', NORTH_WEST_CLEAR, 4.6, bridge));
 
-  // Bikes on solid west plaster (not in the windows).
-  for (const u of [WEST_SOLID[0], WEST_SOLID[1], WEST_SOLID[3]]) {
-    const bike = new THREE.Group();
-    bike.add(mesh(new THREE.TorusGeometry(0.26, 0.035, 8, 16), toon('#2b2d42'), -0.32, 0, 0, false));
-    bike.add(mesh(new THREE.TorusGeometry(0.26, 0.035, 8, 16), toon('#2b2d42'), 0.32, 0, 0, false));
-    bike.add(box(0.65, 0.05, 0.05, '#ff5a1f', 0, 0.1, 0));
-    bike.add(box(0.06, 0.32, 0.05, '#ff5a1f', -0.18, 0.26, 0));
-    bike.add(box(0.2, 0.04, 0.04, '#2b2d42', 0.28, 0.28, 0));
-    root.add(onWall('west', u, 1.55, bike));
-  }
+  // Parked on the floor in the corners — never on west window glass.
+  root.add(floorBike(-15.5, -10.5, 0.4));
+  root.add(floorBike(-15.2, 10.2, -0.5));
+  root.add(floorBike(14.5, -10.2, Math.PI * 0.7));
 
   const tulips = new THREE.Group();
   for (let i = 0; i < 8; i++) {
@@ -60,19 +65,20 @@ export function amsterdamLook(): THREE.Group {
     tulips.add(sphere(0.11, ['#ff4d6d', '#ff9f1c', '#ffe066', '#ff4d6d', '#c77dff', '#ff8fab', '#ff4d6d', '#ffe066'][i], x, 0.32, 0));
   }
   tulips.add(box(2.8, 0.2, 0.35, '#8b5e3c', 0, -0.35, 0));
-  // East wall north of the TV / south of Services.
   root.add(onWall('east', -11.5, 1.9, tulips));
 
   const mill = new THREE.Group();
-  mill.add(cyl(0.25, 0.35, 1.1, '#fffaf3', 0, 0, 0));
-  mill.add(box(1.4, 0.12, 0.08, '#2b2d42', 0, 0.45, 0.1));
-  mill.add(box(0.12, 1.4, 0.08, '#2b2d42', 0, 0.45, 0.1));
-  root.add(onWall('south', SOUTH_SOLID[2], 2.5, mill));
+  mill.add(cyl(0.25, 0.35, 1.1, '#fffaf3', 0, 0.55, 0));
+  mill.add(box(1.4, 0.12, 0.08, '#2b2d42', 0, 1.0, 0.1));
+  mill.add(box(0.12, 1.4, 0.08, '#2b2d42', 0, 1.0, 0.1));
+  mill.position.set(12.5, 0, 10.5);
+  root.add(mill);
 
-  root.add(banner('south', SOUTH_SOLID[2] + 1.6, '#ff5a1f'));
+  root.add(banner('south', SOUTH_SOLID[2], '#ff5a1f'));
   root.add(banner('south', SOUTH_SOLID[3], '#fffaf3'));
+  // High lanterns only on board-clear north and solid south — not over west glass.
   root.add(lanterns('north', [NORTH_WEST_CLEAR, NORTH_EAST_CLEAR, NORTH_EAST_CLEAR + 2.2], ['#ff9f1c', '#ff4d6d', '#ffe066']));
-  root.add(lanterns('east', [-11, -5, 5, 10], ['#5ec4e0', '#ff9f1c', '#ff4d6d', '#ffe066']));
+  root.add(lanterns('south', [SOUTH_SOLID[0], SOUTH_SOLID[2], SOUTH_SOLID[3]], ['#5ec4e0', '#ff9f1c', '#ff4d6d']));
 
   root.add(rug(1.4, 1.0, '#3a8fb7', -12, -10));
   root.add(rug(1.2, 0.9, '#ff5a1f', 12, -10));
