@@ -1,0 +1,192 @@
+/* Language fellow chat — conversational surface instead of the raw CLI. */
+.modal.fellow-chat {
+  width: min(720px, 100%);
+  height: min(720px, calc(100vh - 32px));
+  max-height: calc(100vh - 32px);
+}
+.modal.fellow-chat header {
+  gap: 10px;
+}
+.modal.fellow-chat .fellow-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid var(--ink);
+  flex: none;
+}
+.fellow-chat-title {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.fellow-chat-title h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 900;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.fellow-chat-title small {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.fellow-chat-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+  min-height: 0;
+  padding: 12px 14px !important;
+  background:
+    radial-gradient(1200px 400px at 10% -10%, #ffe8d6 0%, transparent 55%),
+    linear-gradient(180deg, #fffaf3 0%, #fff4e8 100%);
+}
+.fellow-chat-thread {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 4px 2px 8px;
+}
+.fellow-bubble {
+  max-width: min(85%, 36rem);
+  padding: 10px 12px;
+  border: 2px solid var(--ink);
+  border-radius: 16px;
+  box-shadow: 0 2px 0 var(--ink);
+  animation: fellow-pop .16s ease-out;
+}
+@keyframes fellow-pop {
+  from { transform: translateY(6px); opacity: .4; }
+}
+.fellow-bubble .who {
+  display: block;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+.fellow-bubble .text {
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+.fellow-optics {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.fellow-whisper {
+  margin: 0;
+  font-style: italic;
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 1.45;
+  color: #6b635c;
+  letter-spacing: 0.01em;
+}
+.fellow-speech {
+  margin: 0;
+  padding: 4px 0 4px 12px;
+  border-left: 3px solid #3b6fd9;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.15em 0.25em;
+}
+.fellow-say {
+  font-style: normal;
+  font-weight: 800;
+  font-size: 15px;
+  line-height: 1.45;
+  color: var(--ink);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.fellow-aside {
+  font-style: italic;
+  font-weight: 600;
+  font-size: 13px;
+  color: #6b635c;
+  white-space: pre-wrap;
+}
+.fellow-bubble.you {
+  align-self: flex-end;
+  background: var(--accent);
+  color: #fff;
+  border-bottom-right-radius: 6px;
+}
+.fellow-bubble.you .who { color: rgba(255, 255, 255, 0.85); }
+.fellow-bubble.fellow {
+  align-self: flex-start;
+  background: #fff;
+  border-bottom-left-radius: 6px;
+}
+.fellow-bubble.fellow.live {
+  border-style: dashed;
+  opacity: 0.95;
+}
+.fellow-bubble.note {
+  align-self: center;
+  max-width: 92%;
+  background: #efe6da;
+  border-style: dashed;
+  box-shadow: none;
+  color: var(--muted);
+  font-size: 13px;
+}
+.fellow-bubble.note .text {
+  font-size: 13px;
+  font-weight: 700;
+  text-align: center;
+}
+.fellow-chat-typing {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--muted);
+  padding: 0 4px 2px;
+}
+.fellow-chat-compose {
+  display: flex !important;
+  align-items: flex-end;
+  gap: 8px;
+  padding: 12px 14px !important;
+}
+.fellow-chat-compose .dictate-field,
+.fellow-chat-compose textarea {
+  flex: 1;
+  min-width: 0;
+}
+.fellow-chat-compose textarea {
+  width: 100%;
+  min-height: 52px;
+  max-height: 140px;
+  resize: vertical;
+  font: inherit;
+  font-weight: 700;
+  padding: 10px 12px;
+  border: 3px solid var(--ink);
+  border-radius: 14px;
+  background: #fff;
+}
+@media (max-width: 640px) {
+  .modal.fellow-chat {
+    width: 100%;
+    height: calc(100vh - 16px);
+    border-radius: 16px;
+  }
+  .fellow-bubble { max-width: 92%; }
+}

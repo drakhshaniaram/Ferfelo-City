@@ -26,4 +26,6 @@ test('fellowBrief names the fellow, languages, and scene', () => {
   assert.match(text, /Toast at a Hamburg tent/);
   assert.match(text, /Ferfelo Academy/);
   assert.match(text, /local-tips/);
+  assert.match(text, /\(\(Marco smiles/);
+  assert.match(text, /„Hallo! Bereit zum Kochen\?“/);
 });

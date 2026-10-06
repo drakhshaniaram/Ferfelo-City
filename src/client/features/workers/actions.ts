@@ -30,7 +30,7 @@ import { openPull } from '../../ui/pull';
 import { openRepoPulls, workerRepos } from '../../ui/repos';
 import { openTerminal } from '../../ui/terminal';
 import { hiringPaused, usageLabel, usageTitle } from '../../ui/usage';
-import { openFellowHire } from '../fellows';
+import { openFellowChat, openFellowHire } from '../fellows';
 import { loadLearner } from '../../state/learner';
 
 // The kinds of thing you can use that this defines (see InteractKinds in world/types.ts).
@@ -130,6 +130,10 @@ export function installWorkerActions(ctx: Ctx, core: CoreState, parts: WorkerAct
     }
   }
 
+  function openFellow(workerId: string) {
+    openFellowChat(net, workerId, { openTerminal: (id) => openWorkerTerminal(id) });
+  }
+
   /** Direct hire from an empty desk: invite a language fellow with a scene brief. */
   function hireAtDesk(deskId: string) {
     const desk = plan().byId.get(deskId)!;
@@ -138,7 +142,13 @@ export function installWorkerActions(ctx: Ctx, core: CoreState, parts: WorkerAct
       deskLabel: desk.label,
       onHire: (fellowId, sceneNote, o) => {
         const brief = fellowBrief(fellowId, loadLearner(), sceneNote || undefined);
-        hire(deskId, brief, false, o.provider, o.model, o.effort, undefined, undefined, undefined, fellowId);
+        hire(deskId, brief, false, o.provider ?? 'cursor', o.model, o.effort, undefined, undefined, undefined, fellowId);
+        const off = store.on('workers', () => {
+          const w = store.workerAtDesk(deskId);
+          if (!w?.fellowId || w.fellowId !== fellowId) return;
+          off();
+          openFellow(w.id);
+        });
       },
     });
   }
@@ -390,10 +400,20 @@ export function installWorkerActions(ctx: Ctx, core: CoreState, parts: WorkerAct
         h('span.title', {}, `${sign ? `🪧 ${sign} · ` : ''}${w.name} · ${STATUS_LABEL[w.status]}`),
         doing ? aside(doing) : '',
         spent ? h('span.cost', { title: usageTitle(w.usage!, workerProvider) }, spent) : '',
-        key('E', 'Open terminal'),
+        key('E', w.fellowId ? 'Chat' : 'Open terminal'),
         key('C', 'Changes'),
         isAsleep(w.status) ? key('R', shell ? 'Restart' : 'Resume') : key('P', shell ? 'Run command' : 'Prompt'),
-        w.repos?.length ? reposKey(w) : w.pr ? key('O', `PR #${w.pr.number}`) : w.prOpening ? aside('⏳ Opening PR…') : prReady(w) ? key('O', 'Open PR') : '',
+        w.fellowId
+          ? key('O', 'Terminal')
+          : w.repos?.length
+            ? reposKey(w)
+            : w.pr
+              ? key('O', `PR #${w.pr.number}`)
+              : w.prOpening
+                ? aside('⏳ Opening PR…')
+                : prReady(w)
+                  ? key('O', 'Open PR')
+                  : '',
         key('X', 'Send home'),
         labelKey,
       ],
@@ -453,11 +473,11 @@ export function installWorkerActions(ctx: Ctx, core: CoreState, parts: WorkerAct
       if (!w && plan().byId.get(it.deskId)?.room) return key === 'E' ? parts.meeting.showMeeting() : undefined;
       if (key === 'B' && !w) return openShell(it.deskId);
       if (key === 'P') return promptAtDesk(it.deskId);
-      if (key === 'E') return w ? openWorkerTerminal(w.id) : hireAtDesk(it.deskId);
+      if (key === 'E') return w ? (w.fellowId ? openFellow(w.id) : openWorkerTerminal(w.id)) : hireAtDesk(it.deskId);
       if (key === 'C' && w) return openWorkerChanges(w.id);
       if (key === 'R' && w && isAsleep(w.status)) return resumeWorker(w);
       if (key === 'X' && w) return killWorker(w.id);
-      if (key === 'O' && w) return pullRequestFor(w);
+      if (key === 'O' && w) return w.fellowId ? openWorkerTerminal(w.id) : pullRequestFor(w);
     },
   });
   ctx.interactions.define('station', {
@@ -507,5 +527,5 @@ export function installWorkerActions(ctx: Ctx, core: CoreState, parts: WorkerAct
     };
   }
 
-  return { officeIsFull, firstFreeSeat, hire, hireAtDesk, resumeWorker, fixLostWorktree, pullRequestFor, standAt, boardActions };
+  return { officeIsFull, firstFreeSeat, hire, hireAtDesk, openFellow, resumeWorker, fixLostWorktree, pullRequestFor, standAt, boardActions };
 }

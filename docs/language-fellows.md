@@ -9,9 +9,13 @@ Ferfelo Academy turns empty desks into seats for **language fellows**: cultural-
 1. Walk to an empty desk and press **E**.
 2. Set native language, target language, and level (**Newbie** / **Growing** / **Immersed**). Kept in this browser.
 3. Pick a fellow and optionally rewrite the scene note.
-4. Choose an agent provider and invite.
+4. Invite — fellows default to **Cursor** (✏️ Edit to pick another provider).
 
-The fellow sits down under their catalog name (Lena, Marco, …) with a brief that sets role, language mix, scene, and soft tool hints.
+The fellow sits down under their catalog name (Lena, Marco, …) with a brief that sets role, language mix, scene, and soft tool hints. Chat opens automatically.
+
+## Chat
+
+**E** at a fellow opens a chat window (not the CLI). Type as usual; replies stream from the agent session. **🖥️ Terminal** (or **O** at the desk) opens the raw terminal when you need it.
 
 ## Seed catalog
 

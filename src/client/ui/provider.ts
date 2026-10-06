@@ -288,18 +288,27 @@ export function agentFields(project: ProjectInfo | null, id: string, initial: Ag
 /**
  * Which worker to start: the office's default (⚙️ Settings), shown as a line, with an ✏️ Edit button
  * that opens the provider, model and effort fields to pick another for this one.
+ * `prefer` overrides that default for this picker (fellows default to Cursor).
  */
-export function providerPicker(project: ProjectInfo | null, id: string, label = 'Worker'): ProviderPicker {
+export function providerPicker(project: ProjectInfo | null, id: string, label = 'Worker', prefer?: AgentChoice): ProviderPicker {
   let editing = false;
-  const fields = agentFields(project, id, officeChoice(project));
+  const preferred = (): AgentChoice => {
+    if (prefer && supportedProviders(project).includes(prefer.provider)) return prefer;
+    return officeChoice(project);
+  };
+  const fields = agentFields(project, id, preferred());
   fields.element.classList.add('hidden');
   const current = h('span.provider-current');
   const edit = h('button.btn.small', { type: 'button', 'aria-expanded': 'false' }) as HTMLButtonElement;
   const element = h('div.provider-pick', {}, h('div.provider-summary', {}, h('span.provider-label', {}, label), current, edit), fields.element);
   const paint = () => {
-    const def = officeChoice(project);
+    const def = preferred();
     current.textContent = choiceLabel(def);
-    current.title = store.prompts.agent ? 'The office’s default worker, set in ⚙️ Settings' : 'The office’s default worker (its --agent); an admin can pick another in ⚙️ Settings';
+    current.title = prefer
+      ? `Fellows start on ${PROVIDER_LABEL[def.provider]} by default`
+      : store.prompts.agent
+        ? 'The office’s default worker, set in ⚙️ Settings'
+        : 'The office’s default worker (its --agent); an admin can pick another in ⚙️ Settings';
     current.classList.toggle('hidden', editing);
     edit.textContent = editing ? '↺ Use the default' : '✏️ Edit';
     edit.title = editing ? `Back to ${choiceLabel(def)}` : 'Pick another provider, model or effort for this one';
@@ -311,7 +320,7 @@ export function providerPicker(project: ProjectInfo | null, id: string, label = 
     paint();
     // They open on the default as it is now.
     if (!editing) return;
-    fields.set(officeChoice(project));
+    fields.set(preferred());
     (fields.element.querySelector('select') as HTMLSelectElement | null)?.focus();
   });
   paint();
@@ -319,9 +328,9 @@ export function providerPicker(project: ProjectInfo | null, id: string, label = 
   const off = store.on('prompts', () => (element.isConnected ? paint() : off()));
   return {
     element,
-    value: () => (editing ? fields.value() : officeChoice(project).provider),
-    model: () => (editing ? fields.model() : officeChoice(project).model),
-    effort: () => (editing ? fields.effort() : officeChoice(project).effort),
+    value: () => (editing ? fields.value() : preferred().provider),
+    model: () => (editing ? fields.model() : preferred().model),
+    effort: () => (editing ? fields.effort() : preferred().effort),
     valid: () => !editing || fields.valid(),
   };
 }

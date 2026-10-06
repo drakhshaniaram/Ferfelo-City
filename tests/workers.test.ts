@@ -860,7 +860,7 @@ test('Cursor workers keep their hooks in their folder, follow them, and resume t
   assert.equal(worker.status, 'idle');
   assert.equal(worker.model, 'gpt-5');
   assert.equal(worker.sessionId, undefined);
-  assert.deepEqual(first.args, ['--trust', '--model', 'gpt-5', '--', '- fix the login']);
+  assert.deepEqual(first.args, ['--model', 'gpt-5', '--', '- fix the login']);
   assert.equal(calls.some(r => r.kind === 'claude'), false);
   // Its hooks are in the folder it runs in, one entry an event, each naming this worker.
   assert.deepEqual(Object.keys(entries()!), ['sessionStart', 'beforeSubmitPrompt', 'preToolUse', 'postToolUse', 'postToolUseFailure', 'stop']);
@@ -903,7 +903,7 @@ test('Cursor workers keep their hooks in their folder, follow them, and resume t
   await restored.start();
   const nextCalls = await waitFor(f.read, x => x.filter(r => r.kind === 'cursor-agent' && !r.stdin).length >= 2);
   const next = nextCalls.filter(r => r.kind === 'cursor-agent' && !r.stdin).at(-1)!;
-  assert.deepEqual(next.args, ['--trust', '--resume=second-chat']);
+  assert.deepEqual(next.args, ['--resume=second-chat']);
   assert.notEqual(next.env.hookToken, token);
   assert.equal(restored.get(worker.id)?.provider, 'cursor');
   assert.equal(restored.get(worker.id)?.model, 'gpt-5');
@@ -915,7 +915,7 @@ test('Cursor workers keep their hooks in their folder, follow them, and resume t
   delete process.env.FAKE_AGENT_EXIT_MS;
   assert.equal(restored.resume(worker.id, 'follow-up from the queue'), undefined);
   const resumed = await waitFor(f.read, x => x.filter(r => r.kind === 'cursor-agent' && !r.stdin).length >= 3);
-  assert.deepEqual(resumed.filter(r => r.kind === 'cursor-agent' && !r.stdin).at(-1)!.args, ['--trust', '--resume=second-chat', '--', 'follow-up from the queue']);
+  assert.deepEqual(resumed.filter(r => r.kind === 'cursor-agent' && !r.stdin).at(-1)!.args, ['--resume=second-chat', '--', 'follow-up from the queue']);
   assert.equal(entries()!.stop.length, 1);
   // Sent home: the folder is the project's own, so its entries are taken out of it.
   await restored.kill(worker.id);

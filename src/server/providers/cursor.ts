@@ -20,8 +20,8 @@ export const cursor: ProviderAdapter<undefined, CursorSetup> = {
   launch({ h: { info }, args, prompt, resumeSessionId, cwd, setup }) {
     args = withoutCursorLaunchArgs(args);
     addCursorHooks(cwd, setup.hook, info.id);
-    // The office made this folder for it. Cursor's own permission prompts stay as they are.
-    args.push('--trust');
+    // Don't pass --trust: current cursor-agent only allows it with --print/headless, and workers
+    // run in a PTY. Workspace trust and permission prompts stay Cursor's own.
     // Its chat id is the first one its hooks name. A resumed chat keeps the model it had.
     if (resumeSessionId) args.push(`--resume=${resumeSessionId}`);
     else if (info.model) args.push('--model', info.model);

@@ -70,13 +70,13 @@ export function installPalette(ctx: Ctx, parts: PaletteParts) {
     for (const w of store.workers.values()) {
       const desk = DESK_BY_ID.get(w.deskId);
       const spot = desk && deskSpot(desk);
-      const open = () => waiting.openWorkerTerminal(w.id);
+      const open = () => (w.fellowId ? actions.openFellow(w.id) : waiting.openWorkerTerminal(w.id));
       out.push({
-        icon: desk?.station ? STATION_INFO[desk.station].icon : w.kind === 'shell' ? '🐚' : '🧑‍💻',
-        kind: 'Worker',
+        icon: desk?.station ? STATION_INFO[desk.station].icon : w.fellowId ? '🎓' : w.kind === 'shell' ? '🐚' : '🧑‍💻',
+        kind: w.fellowId ? 'Fellow' : 'Worker',
         title: w.name,
         detail: [w.task?.name, desk?.label, STATUS_LABEL[w.status]].filter(Boolean).join(' · '),
-        keywords: [w.title, w.worktree?.branch],
+        keywords: [w.title, w.worktree?.branch, w.fellowId],
         open,
         walk: desk && spot ? () => walkThen(spot, `${w.name} at ${desk.label}`, open, desk) : undefined,
       });

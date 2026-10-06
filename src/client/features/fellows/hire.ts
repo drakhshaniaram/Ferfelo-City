@@ -23,7 +23,7 @@ export function openFellowHire(opts: FellowHireOpts) {
     placeholder: 'Optional scene note (defaults to this fellow’s usual scene)…',
     'aria-label': 'Scene note',
   }) as HTMLTextAreaElement;
-  const provider: ProviderPicker = providerPicker(store.project, 'fellow-provider');
+  const provider: ProviderPicker = providerPicker(store.project, 'fellow-provider', 'Fellow runs on', { provider: 'cursor' });
   const submit = h('button.btn.primary', { type: 'submit', disabled: true }, 'Invite fellow') as HTMLButtonElement;
   const cancel = h('button.btn', { type: 'button' }, 'Cancel');
   const warning = pressureNote(store.machine);
