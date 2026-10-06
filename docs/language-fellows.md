@@ -15,7 +15,7 @@ The fellow sits down under their catalog name (Lena, Marco, …) with a brief th
 
 ## Chat
 
-**E** at a fellow opens a chat window (not the CLI). Type as usual; replies stream from the agent session. **🖥️ Terminal** (or **O** at the desk) opens the raw terminal when you need it.
+**E** at a fellow opens a chat window (not the CLI). Type as usual; replies stream from the agent session. Closing the chat keeps the thread for that fellow until they leave the desk (same browser tab). **🖥️ Terminal** (or **O** at the desk) opens the raw terminal when you need it.
 
 ## Seed catalog
 

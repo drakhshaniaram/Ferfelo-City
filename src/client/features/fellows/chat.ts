@@ -7,6 +7,13 @@ import { isAsleep, isBusy } from '../../../shared/status';
 import { store } from '../../state';
 import { h, openModal, STATUS_LABEL, type Modal } from '../../ui/dom';
 import { dictateField } from '../../ui/dictate';
+import {
+  clearFellowChatHistory,
+  loadFellowChatHistory,
+  pruneFellowChatHistories,
+  saveFellowChatHistory,
+  type FellowChatBubble,
+} from './chat-history';
 
 /** Character.ai-style body: whispered context vs spoken lines with a left bar. */
 function renderFellowOptics(text: string): HTMLElement {
@@ -36,11 +43,9 @@ function bubbleBody(role: Role, text: string, live?: boolean): HTMLElement {
   return h('div.text', {}, text || (live ? '…' : ''));
 }
 
-type Role = 'you' | 'fellow' | 'note';
+type Role = FellowChatBubble['role'];
 
-interface Bubble {
-  role: Role;
-  text: string;
+interface Bubble extends FellowChatBubble {
   live?: boolean;
 }
 
@@ -57,6 +62,14 @@ function sceneFromBrief(prompt: string): string {
   return (m?.[1] ?? prompt).split('\n')[0]!.trim().slice(0, 160);
 }
 
+function seedBubbles(fellowName: string, fellowRole: string, prompt?: string): Bubble[] {
+  const bubbles: Bubble[] = [
+    { role: 'note', text: `${fellowName} · ${fellowRole}. Chat in your target language when you can — they’ll scaffold for your level.` },
+  ];
+  if (prompt) bubbles.push({ role: 'note', text: `Scene: ${sceneFromBrief(prompt)}` });
+  return bubbles;
+}
+
 export interface FellowChatOpts {
   openTerminal(workerId: string): void;
 }
@@ -69,10 +82,9 @@ export function openFellowChat(net: Net, workerId: string, opts: FellowChatOpts)
   if (!info?.fellowId) return;
   const fellow = FELLOW_CATALOG[info.fellowId];
 
-  const bubbles: Bubble[] = [
-    { role: 'note', text: `${fellow.name} · ${fellow.role}. Chat in your target language when you can — they’ll scaffold for your level.` },
-  ];
-  if (info.prompt) bubbles.push({ role: 'note', text: `Scene: ${sceneFromBrief(info.prompt)}` });
+  const saved = loadFellowChatHistory(workerId);
+  const bubbles: Bubble[] = saved?.length ? saved.map((b) => ({ ...b })) : seedBubbles(fellow.name, fellow.role, info.prompt);
+  const remember = () => saveFellowChatHistory(workerId, bubbles);
 
   const thread = h('div.fellow-chat-thread', { role: 'log', 'aria-live': 'polite', 'aria-relevant': 'additions' });
   const statusPill = h('span.pill', {});
@@ -124,6 +136,7 @@ export function openFellowChat(net: Net, workerId: string, opts: FellowChatOpts)
     if (text) bubbles[bubbles.length - 1] = { role: 'fellow', text };
     else bubbles.pop();
     awaiting = false;
+    remember();
     paintThread();
   };
 
@@ -171,6 +184,7 @@ export function openFellowChat(net: Net, workerId: string, opts: FellowChatOpts)
     awaiting = true;
     stream = '';
     ignoreUntil = Date.now() + 600;
+    remember();
     paintThread();
     input.value = '';
     sendBtn.disabled = true;
@@ -212,8 +226,10 @@ export function openFellowChat(net: Net, workerId: string, opts: FellowChatOpts)
 
   let lastStatus: WorkerStatus = info.status;
   const unsub = store.on('workers', () => {
+    pruneFellowChatHistories(store.workers.keys());
     const w = store.workers.get(workerId);
     if (!w) {
+      clearFellowChatHistory(workerId);
       modal.close();
       return;
     }
@@ -233,6 +249,8 @@ export function openFellowChat(net: Net, workerId: string, opts: FellowChatOpts)
     closeButton: false,
     doing: `💬 chatting with ${fellow.name}`,
     onClose: () => {
+      finishLive();
+      remember();
       unsub();
       listeners.delete(onMsg);
       net.send({ t: 'worker.detach', workerId });
@@ -245,5 +263,8 @@ export function openFellowChat(net: Net, workerId: string, opts: FellowChatOpts)
     modal.close();
     opts.openTerminal(workerId);
   });
-  setTimeout(() => input.focus(), 30);
+  setTimeout(() => {
+    thread.scrollTop = thread.scrollHeight;
+    input.focus();
+  }, 30);
 }
