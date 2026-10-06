@@ -3,20 +3,12 @@
  * and F to hang a picture; the project in the corner (click it for the floors); Settings, and your
  * character.
  */
-import { ROOF } from '../../../shared/rooftop';
-import type { Ctx } from '../../core/context';
-import type { CoreState } from '../../core/ctx';
-import { builtFloors } from '../../core/floors';
-import type { Parts } from '../../core/parts';
-import { waitingInOrder, waitingLabel } from '../../nextup';
-import { saveSettings, store } from '../../state';
-import { openAccounts } from '../../ui/accounts';
+import { cityOf } from '../../../shared/cities';
+import { phrasesForCity, scenesForCity, type CityScene } from '../../../shared/cities/scenes';
+import { setPendingScene } from '../../state/pending-scene';
+import { openPhrasesBoard, openPracticeQueue, openScenesBoard } from '../boards/academy-ui';
 import { openBoard } from '../../ui/boards';
-import { openCharacter } from '../../ui/character';
-import { $ } from '../../ui/dom';
-import { toggleFloorMenu } from '../../ui/floormenu';
-import { openHelp } from '../../ui/hud';
-import { mountHud } from '../../ui/menu';
+import { $, toast } from '../../ui/dom';
 import { isAcademyMode } from '../../../shared/mode';
 import { openServices } from '../../ui/services';
 import { openSettings, type SettingsPane } from '../../ui/settings';
@@ -25,6 +17,18 @@ import { openTeam } from '../../ui/team';
 import { openUpgrade } from '../../ui/upgrade';
 import { openWhiteboard } from '../whiteboard/ui';
 import { describeSky } from '../../world/sky';
+import { openAccounts } from '../../ui/accounts';
+import { openCharacter } from '../../ui/character';
+import { toggleFloorMenu } from '../../ui/floormenu';
+import { openHelp } from '../../ui/hud';
+import { mountHud } from '../../ui/menu';
+import { ROOF } from '../../../shared/rooftop';
+import type { Ctx } from '../../core/context';
+import type { CoreState } from '../../core/ctx';
+import { builtFloors } from '../../core/floors';
+import type { Parts } from '../../core/parts';
+import { waitingInOrder, waitingLabel } from '../../nextup';
+import { saveSettings, store } from '../../state';
 
 export type HudParts = Pick<Parts, 'worlds' | 'place' | 'travel' | 'you' | 'actions' | 'waiting' | 'meeting' | 'bookshelf' | 'hanging' | 'talk' | 'notifier'>;
 
@@ -33,6 +37,33 @@ export function installHud(ctx: Ctx, core: CoreState, parts: HudParts) {
   const { net, voice, settings, player, sound } = ctx;
   const { inOffice } = parts.worlds;
   const { travel, waiting, actions, hanging, talk } = parts;
+
+  function hudCityId() {
+    return store.currentFloor()?.cityId;
+  }
+  function hudCityName() {
+    return cityOf(hudCityId())?.name ?? 'Campus';
+  }
+  function startSceneFromHud(s: CityScene) {
+    setPendingScene({ sceneNote: s.sceneNote, fellowId: s.fellowId, title: s.title });
+    toast(`🎭 “${s.title}” ready — empty desk → E`, 'info');
+  }
+  function openScenesFromHud() {
+    openScenesBoard(scenesForCity(hudCityId()), hudCityName());
+  }
+  function openPhrasesFromHud() {
+    openPhrasesBoard(phrasesForCity(hudCityId()), hudCityName());
+  }
+  function openPracticeFromHud() {
+    openPracticeQueue({
+      cityName: hudCityName(),
+      active: [...store.workers.values()]
+        .filter((w) => w.fellowId)
+        .map((w) => ({ name: w.name, scene: w.task?.name || w.prompt || 'In a scene' })),
+      upNext: scenesForCity(hudCityId()).slice(0, 4),
+      onStartScene: startSceneFromHud,
+    });
+  }
 
   // Buttons must not keep focus, or Space (jump) would click them again.
   $('hud').addEventListener('click', (e) => {
@@ -60,6 +91,9 @@ export function installHud(ctx: Ctx, core: CoreState, parts: HudParts) {
       { id: 'pulls', icon: '🔀', label: 'Pull requests', section: 'Open', shown: () => !isAcademyMode(store.mode), count: () => store.pulls.items.filter((p) => p.state === 'OPEN').length, run: () => openBoard('pulls', net, actions.boardActions()) },
       { id: 'queue', icon: '📋', label: 'Task queue', section: 'Open', shown: () => !isAcademyMode(store.mode), count: () => store.queue.tasks.filter((t) => t.status !== 'done').length, title: () => 'Issues and tasks waiting for a worker', run: waiting.showQueue },
       { id: 'services', icon: '🌐', label: 'Services', section: 'Open', shown: () => !isAcademyMode(store.mode), count: () => store.services.items.length, title: () => 'Web servers the workers are running', run: () => openServices() },
+      { id: 'scenes', icon: '🎭', label: 'Scenes', section: 'Open', shown: () => isAcademyMode(store.mode), title: () => 'Practice scenes for this city — start one, then invite a fellow', run: () => openScenesFromHud() },
+      { id: 'phrases', icon: '💬', label: 'Phrase wall', section: 'Open', shown: () => isAcademyMode(store.mode), title: () => 'Lines to try aloud with a fellow', run: () => openPhrasesFromHud() },
+      { id: 'practice', icon: '📋', label: 'Practice queue', section: 'Open', shown: () => isAcademyMode(store.mode), count: () => [...store.workers.values()].filter((w) => w.fellowId).length, title: () => 'Who’s mid-scene and what’s up next', run: () => openPracticeFromHud() },
       { id: 'staff-issues', icon: '📌', label: 'Staff: Issues', section: 'Office', shown: () => isAcademyMode(store.mode), count: () => store.issues.items.filter((i) => i.state === 'OPEN').length, title: () => 'Coding boards (staff)', run: () => openBoard('issues', net, actions.boardActions()) },
       { id: 'staff-pulls', icon: '🔀', label: 'Staff: Pull requests', section: 'Office', shown: () => isAcademyMode(store.mode), count: () => store.pulls.items.filter((p) => p.state === 'OPEN').length, title: () => 'Coding boards (staff)', run: () => openBoard('pulls', net, actions.boardActions()) },
       { id: 'staff-queue', icon: '📋', label: 'Staff: Task queue', section: 'Office', shown: () => isAcademyMode(store.mode), count: () => store.queue.tasks.filter((t) => t.status !== 'done').length, title: () => 'Coding queue (staff)', run: waiting.showQueue },

@@ -15,7 +15,17 @@ The fellow sits down under their catalog name (Lena, Marco, …) with a brief th
 
 ## Mode
 
-The building runs as **Academy** by default (`AGENT_OFFICE_MODE=academy` or `--mode academy`), with the **office tower** as the default map so each city floor paints its own walls and the **rooftop international lounge** is always a ride away. **Ferfelo City**, Castle, and Ship stay available under **⚙️ Settings → Building → Map** (hall maps borrow the tower briefly when you ride to the roof). With no floors yet, the office opens a **Ferfelo Campus** floor automatically — no GitHub project picker. In the elevator, **Add a city** opens curated floors with a **cartoon set look** each — Amsterdam (mint canal tiles, gables & bikes), Hamburg (brick harbor & ships), Paris (café cream checkers & tower), Tehran (terracotta tiles & turquoise arch). Fellows speak that city’s language by default. The rooftop is the gathering place for every floor’s fellows — fire pit, bar, club, snacks. Admins can switch to **Coding office** in **⚙️ Settings → Building → Mode** to surface GitHub boards in the main menu again. In Academy mode those boards sit under Staff tools; empty-desk **P** invites a fellow instead of a coding task hire.
+The building runs as **Academy** by default (`AGENT_OFFICE_MODE=academy` or `--mode academy`), with the **office tower** as the default map so each city floor is a full cartoon set (canal houses, harbor brick, café awnings, turquoise bazaar…) and the **rooftop international lounge** is always a ride away. **Ferfelo City**, Castle, and Ship stay available under **⚙️ Settings → Building → Map**. With no floors yet, the office opens a **Ferfelo Campus** floor automatically. Elevator **Add a city** opens Amsterdam, Hamburg, Paris, or Tehran — each with its own palette, floor pattern, and wall/floor props.
+
+Wall boards in Academy mode are learning tools, not GitHub:
+
+| Coding office | Academy |
+| --- | --- |
+| Issues | **Scenes** — practice situations for this city |
+| Pull requests | **Phrase wall** — lines to try aloud |
+| Task queue | **Practice queue** — who’s mid-scene + what’s up next |
+
+Staff still has Issues / PRs / Queue under **☰ → Office**. Pick a scene, walk to an empty desk, press **E** to invite a fellow into it. The rooftop gathers fellows from every floor. Admins can switch to **Coding office** in **⚙️ Settings → Building → Mode**. Empty-desk **P** invites a fellow.
 
 ## Chat
 

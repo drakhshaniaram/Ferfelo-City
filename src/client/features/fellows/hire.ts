@@ -10,6 +10,8 @@ import { loadLearner, saveLearner } from '../../state/learner';
 import { pressureNote } from '../../../shared/machine';
 import { learnerFields } from './learner-ui';
 import { applyCityFloorLanguage } from './city-language';
+import { clearPendingScene, peekPendingScene } from '../../state/pending-scene';
+import { isFellowId } from '../../../shared/fellows';
 
 export interface FellowHireOpts {
   deskLabel: string;
@@ -22,13 +24,18 @@ export function openFellowHire(opts: FellowHireOpts) {
   if (cityFloor?.cityId) applyCityFloorLanguage(cityFloor.cityId, { quiet: true });
   let learner = loadLearner();
   const city = cityOf(cityFloor?.cityId);
-  let picked: FellowId | null = null;
+  const pending = peekPendingScene();
+  let picked: FellowId | null = pending?.fellowId && isFellowId(pending.fellowId) ? pending.fellowId : null;
   const list = h('div.fellow-list', { role: 'listbox', 'aria-label': 'Language fellows' });
   const scene = h('textarea', {
     rows: 3,
     placeholder: 'Optional scene note (defaults to this fellow’s usual scene)…',
     'aria-label': 'Scene note',
   }) as HTMLTextAreaElement;
+  if (pending?.sceneNote) {
+    scene.value = pending.sceneNote;
+    clearPendingScene();
+  }
   const provider: ProviderPicker = providerPicker(store.project, 'fellow-provider', 'Fellow runs on', { provider: 'cursor' });
   const submit = h('button.btn.primary', { type: 'submit', disabled: true }, 'Invite fellow') as HTMLButtonElement;
   const cancel = h('button.btn', { type: 'button' }, 'Cancel');
@@ -65,6 +72,7 @@ export function openFellowHire(opts: FellowHireOpts) {
     );
   };
   paintList();
+  if (picked) submit.disabled = false;
 
   const form = h(
     'form.modal.fellow-hire',
