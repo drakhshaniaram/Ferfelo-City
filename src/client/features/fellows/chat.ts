@@ -2,7 +2,7 @@ import './chat.css';
 import type { Net } from '../../net';
 import type { ServerMsg, WorkerInfo, WorkerStatus } from '../../../shared/protocol';
 import { FELLOW_CATALOG, isRtlLanguage } from '../../../shared/fellows';
-import { fellowReplyFromTerminal, parseFellowOptics, textDirection } from '../../../shared/fellow-chat';
+import { fellowReplyFromTerminal, parseFellowOptics, practiceLinesFromReply, textDirection } from '../../../shared/fellow-chat';
 import { isAsleep, isBusy } from '../../../shared/status';
 import { store } from '../../state';
 import { loadLearner } from '../../state/learner';
@@ -68,11 +68,23 @@ function sceneFromBrief(prompt: string): string {
   return (m?.[1] ?? prompt).split('\n')[0]!.trim().slice(0, 160);
 }
 
+function hookFromBrief(prompt: string): string | undefined {
+  const m = /Scene hook \(feel this first\):\s*(.+)/.exec(prompt);
+  return m?.[1]?.trim().slice(0, 180);
+}
+
 function seedBubbles(fellowName: string, fellowRole: string, prompt?: string): Bubble[] {
   const bubbles: Bubble[] = [
-    { role: 'note', text: `${fellowName} · ${fellowRole}. Chat in your target language when you can — they’ll scaffold for your level.` },
+    {
+      role: 'note',
+      text: `${fellowName} · ${fellowRole}. You’re in the scene with them — choose, react, and steal their lines. Chips below jump you in.`,
+    },
   ];
-  if (prompt) bubbles.push({ role: 'note', text: `Scene: ${sceneFromBrief(prompt)}` });
+  if (prompt) {
+    const scene = sceneFromBrief(prompt);
+    const hook = hookFromBrief(prompt);
+    bubbles.push({ role: 'note', text: hook ? `Scene: ${scene}\n${hook}` : `Scene: ${scene}` });
+  }
   return bubbles;
 }
 
@@ -95,11 +107,12 @@ export function openFellowChat(net: Net, workerId: string, opts: FellowChatOpts)
   const thread = h('div.fellow-chat-thread', { role: 'log', 'aria-live': 'polite', 'aria-relevant': 'additions' });
   const statusPill = h('span.pill', {});
   const typing = h('div.fellow-chat-typing.hidden', {}, `${fellow.name} is writing…`);
+  const chips = h('div.fellow-chat-chips', { role: 'group', 'aria-label': 'Quick replies' });
   const learner = loadLearner();
   const preferRtl = isRtlLanguage(learner.nativeLanguage) || isRtlLanguage(learner.targetLanguage);
   const input = h('textarea', {
     rows: 2,
-    placeholder: `Message ${fellow.name}…`,
+    placeholder: `Answer ${fellow.name} — try their line, or pick a chip…`,
     'aria-label': `Message ${fellow.name}`,
     dir: preferRtl ? 'rtl' : 'auto',
     lang: preferRtl && isRtlLanguage(learner.nativeLanguage) ? langTag(learner.nativeLanguage) : undefined,
@@ -112,6 +125,46 @@ export function openFellowChat(net: Net, workerId: string, opts: FellowChatOpts)
   let stream = '';
   let liveEl: HTMLElement | null = null;
   let ignoreUntil = 0;
+
+  const lastFellowText = (): string => {
+    for (let i = bubbles.length - 1; i >= 0; i--) {
+      const b = bubbles[i]!;
+      if (b.role === 'fellow' && b.text && !b.live) return b.text;
+    }
+    return '';
+  };
+
+  const paintChips = () => {
+    const asleep = (() => {
+      const w = store.workers.get(workerId);
+      return !w || isAsleep(w.status);
+    })();
+    const practice = practiceLinesFromReply(lastFellowText());
+    const items: { label: string; fill: string; send?: boolean }[] = [];
+    if (!bubbles.some((b) => b.role === 'you')) {
+      items.push({ label: "👋 I'm in — let's go", fill: "I'm ready — let's jump into the scene.", send: true });
+    }
+    for (const line of practice) {
+      items.push({ label: `🎤 ${line.length > 42 ? `${line.slice(0, 40)}…` : line}`, fill: line, send: true });
+    }
+    items.push({ label: '🔁 Say it slower', fill: 'Can you say that again, a bit slower?', send: true });
+    items.push({ label: '❓ What does that mean?', fill: 'What does that mean? Explain in my native language.', send: true });
+    items.push({ label: '➡️ Next beat', fill: "I'm ready for the next part of the scene.", send: true });
+    chips.replaceChildren(
+      ...items.map((item) => {
+        const btn = h('button.fellow-chip', { type: 'button', disabled: asleep }, item.label) as HTMLButtonElement;
+        btn.addEventListener('click', () => {
+          if (asleep) return;
+          input.value = item.fill;
+          input.dir = textDirection(item.fill);
+          sendBtn.disabled = false;
+          if (item.send) send();
+          else input.focus();
+        });
+        return btn;
+      }),
+    );
+  };
 
   const paintThread = () => {
     thread.replaceChildren(
@@ -126,6 +179,7 @@ export function openFellowChat(net: Net, workerId: string, opts: FellowChatOpts)
     );
     liveEl = thread.querySelector('.fellow-bubble.live .fellow-optics, .fellow-bubble.live .text');
     thread.scrollTop = thread.scrollHeight;
+    paintChips();
   };
   paintThread();
 
@@ -136,6 +190,7 @@ export function openFellowChat(net: Net, workerId: string, opts: FellowChatOpts)
     typing.classList.toggle('hidden', !awaiting && !isBusy(w.status));
     sendBtn.disabled = asleep || !input.value.trim();
     input.disabled = asleep;
+    paintChips();
   };
   paintStatus(info);
 
@@ -215,7 +270,7 @@ export function openFellowChat(net: Net, workerId: string, opts: FellowChatOpts)
       termBtn,
       closeBtn,
     ),
-    h('div.body.fellow-chat-body', {}, thread, typing),
+    h('div.body.fellow-chat-body', {}, thread, typing, chips),
     h('footer.fellow-chat-compose', {}, dictateField(input), sendBtn),
   ) as HTMLFormElement;
   form.noValidate = true;

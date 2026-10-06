@@ -224,3 +224,23 @@ export function textDirection(text: string): 'rtl' | 'ltr' {
   if (LTR_CHAR.test(text)) return 'ltr';
   return 'ltr';
 }
+
+/** Spoken practice chunks from a fellow reply — for “say it back” chips. */
+export function practiceLinesFromReply(text: string, max = 2): string[] {
+  const out: string[] = [];
+  for (const seg of parseFellowOptics(text)) {
+    if (seg.kind !== 'speech') continue;
+    const line = seg.parts
+      .filter((p) => p.kind === 'say')
+      .map((p) => p.text.trim())
+      .filter(Boolean)
+      .join(' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+    if (!line || line.length > 120) continue;
+    if (out.includes(line)) continue;
+    out.push(line);
+    if (out.length >= max) break;
+  }
+  return out;
+}

@@ -5,6 +5,7 @@ import {
   isFellowChatChrome,
   parseFellowOptics,
   parseSpeechParts,
+  practiceLinesFromReply,
   rejoinSoftWraps,
   stripFellowBriefEcho,
   textDirection,
@@ -267,4 +268,9 @@ test('rejoinSoftWraps and stripFellowBriefEcho are composable', () => {
   assert.match(soft, /Hamburg with locals/);
   const cleaned = stripFellowBriefEcho(soft);
   assert.equal(cleaned, '((Lena winkt.))\n„Willkommen!“');
+});
+
+test('practiceLinesFromReply pulls spoken chunks for chips', () => {
+  assert.deepEqual(practiceLinesFromReply('((winkt))\n„Prost!“\n„Noch eins?“'), ['Prost!', 'Noch eins?']);
+  assert.deepEqual(practiceLinesFromReply('((only a stage tip — no spoken line yet))'), []);
 });

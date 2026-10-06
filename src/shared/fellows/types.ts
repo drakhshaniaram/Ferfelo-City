@@ -16,7 +16,12 @@ export interface FellowSpec {
   voiceHints?: string[];
   /** Optional locale / dialect bias for scene copy. */
   localeBias?: string;
+  /** Sensory / social hook that pulls the learner into the scene on turn one. */
+  hook: string;
+  /** Ordered micro-beats for a lively session (agent picks the next open one). */
+  beats: readonly string[];
 }
+
 export interface LearnerProfile {
   nativeLanguage: string;
   targetLanguage: string;

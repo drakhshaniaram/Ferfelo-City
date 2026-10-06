@@ -69,7 +69,7 @@ export function openFellowHire(opts: FellowHireOpts) {
       'div.body',
       {},
       warning ? h('p.setting-note.bad', { role: 'alert' }, warning) : null,
-      h('p.fellow-blurb', {}, 'Cultural-context fellows help you live scenes in your new language. Set your learner level, pick a fellow, optionally tweak the scene.'),
+      h('p.fellow-blurb', {}, 'Pick a fellow and drop into their scene. They’ll pull you in with stakes, choices, and one line to try each turn — set your level, then invite.'),
       learnerRow,
       h('label', {}, 'Fellow'),
       list,

@@ -49,6 +49,9 @@ test('fellowBrief names the fellow, languages, and scene', () => {
   assert.match(text, /Ferfelo Academy/);
   assert.match(text, /local-tips/);
   assert.match(text, /Hard language rules/);
+  assert.match(text, /Maximum engagement loop/);
+  assert.match(text, /Scene hook/);
+  assert.match(text, /Session beats/);
   assert.match(text, /short stage beat in English/);
   assert.doesNotMatch(text, /Hallo! Bereit zum Kochen/);
 });

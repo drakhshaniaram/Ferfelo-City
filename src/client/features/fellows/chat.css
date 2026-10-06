@@ -176,6 +176,38 @@
   color: var(--muted);
   padding: 0 4px 2px;
 }
+.fellow-chat-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 2px 2px 4px;
+}
+.fellow-chip {
+  appearance: none;
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--ink);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  padding: 6px 10px;
+  cursor: pointer;
+  box-shadow: 0 1px 0 var(--ink);
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.fellow-chip:hover:not(:disabled) {
+  background: #ffe8d6;
+  transform: translateY(-1px);
+}
+.fellow-chip:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  box-shadow: none;
+}
 .fellow-chat-compose {
   display: flex !important;
   align-items: flex-end;

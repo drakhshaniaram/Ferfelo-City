@@ -19,7 +19,9 @@ The building runs as **Academy** by default (`AGENT_OFFICE_MODE=academy` or `--m
 
 ## Chat
 
-**E** at a fellow opens a chat window (not the CLI). Type as usual; replies stream from the agent session. Closing the chat keeps the thread for that fellow until they leave the desk (same browser tab). **🖥️ Terminal** (or **O** at the desk) opens the raw terminal when you need it.
+**E** at a fellow opens a chat window (not the CLI). Replies stream from the agent session. Quick chips under the thread let you jump in (“I'm in”), steal their last practice line, ask what it means, or push the next beat. Closing the chat keeps the thread for that fellow until they leave the desk (same browser tab). **🖥️ Terminal** (or **O** at the desk) opens the raw terminal when you need it.
+
+Fellows run an **engagement loop**: land a sensory hook, give you a choice with stakes, end every turn with one try-this line in your learning language, then recycle it. They move through scene beats more like a story than a lesson plan.
 
 ## Seed catalog
 
@@ -35,9 +37,9 @@ The building runs as **Academy** by default (`AGENT_OFFICE_MODE=academy` or `--m
 
 ## Scaffolding
 
-- **Newbie** — mostly native language; short, repeated target phrases.
-- **Growing** — mostly target language; native when you stall.
-- **Immersed** — stay in the target language; simpler words and cues.
+- **Newbie** — coach energy: native for comfort, one tiny target chunk to own and repeat.
+- **Growing** — co-player energy: mostly target; choices and stakes; one natural recast, then move on.
+- **Immersed** — adventure energy: stay in the target language; native only as a freeze rescue.
 
 Stage tips and explanations always use the **native** language you picked (including Persian / Sorani script). Spoken practice lines use the **learning** language. Re-invite a fellow after changing languages so the new brief applies.
 
