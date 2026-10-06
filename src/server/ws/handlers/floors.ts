@@ -51,14 +51,19 @@ export const floorHandlers = {
   'floor.addCity'(ctx, c, msg) {
     const who = c.peer.name;
     const city = str(msg.city, 40);
-    const r = addCityFloor(ctx.building, city, who);
-    if (typeof r === 'string') return ctx.sendTo(c, { t: 'floor.added', repo: city, error: r });
-    const floor = ctx.openFloor(r);
-    ctx.floorsChanged();
-    if (!floor) return ctx.sendTo(c, { t: 'floor.added', repo: city, error: `Couldn't open the ${r.name} floor — see the office's log` });
-    console.log(`  ${who} added city floor ${r.name} (${r.dir})`);
-    ctx.toastAll(`🌆 New city floor: ${r.name}, added by ${who}`);
-    ctx.sendTo(c, { t: 'floor.added', repo: city, floor: floor.id });
+    try {
+      const r = addCityFloor(ctx.building, city, who);
+      if (typeof r === 'string') return ctx.sendTo(c, { t: 'floor.added', repo: city, error: r });
+      const floor = ctx.openFloor(r);
+      ctx.floorsChanged();
+      if (!floor) return ctx.sendTo(c, { t: 'floor.added', repo: city, error: `Couldn't open the ${r.name} floor — see the office's log` });
+      console.log(`  ${who} added city floor ${r.name} (${r.dir})`);
+      ctx.toastAll(`🌆 New city floor: ${r.name}, added by ${who}`);
+      ctx.sendTo(c, { t: 'floor.added', repo: city, floor: floor.id });
+    } catch (err) {
+      console.error(`agent-office: floor.addCity ${city} failed:`, err);
+      ctx.sendTo(c, { t: 'floor.added', repo: city, error: `Couldn't add that city: ${(err as Error).message}` });
+    }
   },
   'floor.cancel'(ctx, c, msg) {
     const who = c.peer.name;

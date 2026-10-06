@@ -267,18 +267,8 @@ export function openElevator(opts: ElevatorOptions): void {
     if (showCities && !showAdd) {
       if (offCities) return;
       addBtn.classList.add('hidden');
-      const staff = h('button.btn', { type: 'button' }, 'Staff: add a coding floor');
-      staff.addEventListener('click', () => {
-        offCities?.();
-        offCities = undefined;
-        showCities = false;
-        showAdd = true;
-        needRepos();
-        renderAdd();
-        setTimeout(() => input.focus(), 0);
-      });
       const wrap = h('div');
-      addEl.replaceChildren(wrap, staff);
+      addEl.replaceChildren(wrap);
       offCities = mountCityAdd({
         net,
         root: wrap,
@@ -433,7 +423,7 @@ export function openElevator(opts: ElevatorOptions): void {
         {},
         academy
           ? store.floors.length
-            ? 'Pick a campus or city floor. Add Amsterdam, Hamburg, and more — each sets the practice language. Coding floors stay under Staff.'
+            ? 'Pick a campus or city floor. Add Amsterdam, Hamburg, and more — each sets the practice language.'
             : 'Ferfelo Academy opens a campus for you — or add a city floor for Dutch, German, and themed walls.'
           : store.floors.length
             ? 'Every project is a floor of this building. Pick a floor to ride to, or add another project.'

@@ -6,6 +6,8 @@ import { h } from './dom';
 
 type AddedMsg = { t: 'floor.added'; repo: string; floor?: string; error?: string };
 
+const OPEN_MS = 12_000;
+
 /** Academy elevator panel: curated cities with language + wall themes. */
 export function mountCityAdd(opts: {
   net: Net;
@@ -17,6 +19,24 @@ export function mountCityAdd(opts: {
   const { net, root, ride, close, waitAdded } = opts;
   let adding: CityId | null = null;
   let error = '';
+  let openTimer: number | undefined;
+
+  const finish = (cityId: CityId, floorId?: string, why?: string) => {
+    clearTimeout(openTimer);
+    adding = null;
+    if (why) {
+      error = why;
+      paint();
+      return;
+    }
+    applyCityFloorLanguage(cityId);
+    if (floorId) {
+      close();
+      ride(floorId);
+      return;
+    }
+    paint();
+  };
 
   const paint = () => {
     const have = new Set(store.floors.map((f) => f.cityId).filter(Boolean));
@@ -35,6 +55,13 @@ export function mountCityAdd(opts: {
         error = '';
         paint();
         net.send({ t: 'floor.addCity', city: id });
+        clearTimeout(openTimer);
+        openTimer = window.setTimeout(() => {
+          if (adding !== id) return;
+          const floor = store.floors.find((f) => f.cityId === id);
+          if (floor) finish(id, floor.id);
+          else finish(id, undefined, `Couldn't open ${c.name} — restart the office so it knows about city floors, then try again`);
+        }, OPEN_MS);
       });
       return btn;
     });
@@ -50,23 +77,23 @@ export function mountCityAdd(opts: {
 
   const offAdded = waitAdded((msg) => {
     if (!adding || msg.repo !== adding) return false;
-    const id = adding;
-    adding = null;
-    if (msg.error) {
-      error = msg.error;
-      paint();
-      return true;
-    }
-    applyCityFloorLanguage(id);
-    if (msg.floor) {
-      close();
-      ride(msg.floor);
-    } else paint();
+    finish(adding, msg.error ? undefined : msg.floor, msg.error);
     return true;
   });
-  const offFloors = store.on('floors', paint);
+  // floors broadcast often arrives before floor.added; finish as soon as the city is listed.
+  const offFloors = store.on('floors', () => {
+    if (adding) {
+      const floor = store.floors.find((f) => f.cityId === adding);
+      if (floor) {
+        finish(adding, floor.id);
+        return;
+      }
+    }
+    paint();
+  });
   paint();
   return () => {
+    clearTimeout(openTimer);
     offAdded();
     offFloors();
   };
