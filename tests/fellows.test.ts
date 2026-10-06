@@ -48,6 +48,23 @@ test('fellowBrief names the fellow, languages, and scene', () => {
   assert.match(text, /Toast at a Hamburg tent/);
   assert.match(text, /Ferfelo Academy/);
   assert.match(text, /local-tips/);
-  assert.match(text, /\(\(Marco smiles/);
-  assert.match(text, /„Hallo! Bereit zum Kochen\?“/);
+  assert.match(text, /Hard language rules/);
+  assert.match(text, /short stage beat in English/);
+  assert.doesNotMatch(text, /Hallo! Bereit zum Kochen/);
+});
+
+test('fellowBrief pins scaffolding to a non-English native language', () => {
+  const text = fellowBrief(
+    'amsterdam',
+    { nativeLanguage: 'Persian', targetLanguage: 'Dutch', level: 'newbie' },
+    'Rainy canals',
+  );
+  assert.match(text, /native language is Persian/);
+  assert.match(text, /target language is Dutch/);
+  assert.match(text, /MUST be written in Persian only/);
+  assert.match(text, /MUST be in Dutch/);
+  assert.match(text, /فارسی/);
+  assert.match(text, /short stage beat in Persian/);
+  assert.match(text, /one short phrase in Dutch/);
+  assert.doesNotMatch(text, /Soft tip — try repeating/);
 });

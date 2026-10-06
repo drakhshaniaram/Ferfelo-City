@@ -35,6 +35,8 @@ The fellow sits down under their catalog name (Lena, Marco, …) with a brief th
 - **Growing** — mostly target language; native when you stall.
 - **Immersed** — stay in the target language; simpler words and cues.
 
+Stage tips and explanations always use the **native** language you picked (including Persian / Sorani script). Spoken practice lines use the **learning** language. Re-invite a fellow after changing languages so the new brief applies.
+
 ## Code
 
 - Catalog, language list, and briefs: `src/shared/fellows.ts`
