@@ -188,7 +188,7 @@ export function openCharacter(first: boolean, onSave: (p: Profile) => void) {
   const surprise = h('button.btn', { type: 'button', title: 'Random look' }, '🎲 Surprise me');
   surprise.addEventListener('click', () => change(randomLook(), AVATAR_COLORS[Math.floor(Math.random() * AVATAR_COLORS.length)]));
   const save = h('button.btn.primary', { type: 'submit' }, first ? 'Enter the office 🚪' : 'Save');
-  const close = h('button.btn.close', { type: 'button', 'aria-label': 'Close', title: first ? 'Skip: go in with this look (Esc)' : 'Close (Esc)' }, '✕');
+  const close = h('button.btn.close', { type: 'button', 'aria-label': 'Close', title: first ? 'Skip: go in with this look (Esc)' : 'Save and close (Esc)' }, '✕');
 
   const form = h(
     'form.modal.charsel',
@@ -226,13 +226,13 @@ export function openCharacter(first: boolean, onSave: (p: Profile) => void) {
     onSave(store.profile);
   };
   const modal = openModal(form, {
-    // A stray click shouldn't skip the first one; ✕ and Esc still do.
+    // A stray click shouldn't skip the first one; ✕ and Esc still apply the look so far (same as first join).
     backdropCloses: !first,
     doing: '🪞 picking a new look',
     onClose: () => {
       preview.dispose();
-      // The office only lets you in with a character: skipping it goes in with this one, and the name in the box.
-      if (first && !done) finish(typedName());
+      // Always land the look you left on the turntable — Save, ✕, Esc, or backdrop.
+      if (!done) finish(typedName());
     },
   });
   close.addEventListener('click', () => modal.close());

@@ -62,13 +62,18 @@ export function installYou(ctx: Ctx) {
     }
   }
 
-  /** Your character and your hands, as `p` has them. */
-  function showMyProfile(p: Profile) {
-    const { me, hands } = ctx;
+  /** Your character and your hands, as `p` has them. `announce` tips first-person players to check third person. */
+  function showMyProfile(p: Profile, opts?: { announce?: boolean }) {
+    const { me, hands, player } = ctx;
     me.setColor(p.color);
     me.setLook(p.look);
+    me.setLabel(p.name, null);
     hands.setColor(p.color);
     hands.setSkin(me.skinColor);
+    // In first person the head is hidden — shirt/hands update, but hair/face need third person.
+    if (opts?.announce && player.view === 'first') {
+      toast('Look updated. Switch to third person in ⚙️ Settings to see your hair and face.', 'info');
+    }
   }
 
   return { reach, showMyProfile };

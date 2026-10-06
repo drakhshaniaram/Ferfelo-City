@@ -183,7 +183,7 @@ export function installHud(ctx: Ctx, core: CoreState, parts: HudParts) {
 
   function editProfile() {
     openCharacter(false, (p) => {
-      parts.you.showMyProfile(p);
+      parts.you.showMyProfile(p, { announce: true });
       net.send({ t: 'profile', name: p.name, color: p.color, look: p.look });
     });
   }
