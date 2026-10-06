@@ -15,6 +15,8 @@ export interface FloorDef {
   repo?: string;
   dir: string;
   palette: number;
+  /** Academy city floor (see shared/cities). */
+  cityId?: string;
   addedBy: string;
   addedAt: number;
 }
@@ -251,9 +253,9 @@ export class Building {
     return def;
   }
 
-  /** Adds a no-repo floor from an already-on-disk folder (Academy campus). */
-  seedFloor(name: string, dir: string, by: string): FloorDef {
-    const def = this.newDef(name, undefined, path.resolve(dir), by);
+  /** Adds a no-repo floor from an already-on-disk folder (Academy campus / city). */
+  seedFloor(name: string, dir: string, by: string, opts?: { cityId?: string; palette?: number }): FloorDef {
+    const def = this.newDef(name, undefined, path.resolve(dir), by, opts);
     this.defs.unshift(def);
     this.save();
     return def;
@@ -389,16 +391,16 @@ export class Building {
     return repos;
   }
 
-  private newDef(name: string, repo: string | undefined, dir: string, by: string): FloorDef {
+  private newDef(name: string, repo: string | undefined, dir: string, by: string, opts?: { cityId?: string; palette?: number }): FloorDef {
     const taken = new Set([...this.defs, ...this.pending()].map((d) => d.id));
     const base = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 32) || 'floor';
     let id = base;
     for (let n = 2; taken.has(id); n++) id = `${base}-${n}`;
-    // The first look nobody has, so floors side by side never match; then round again.
     const used = new Set([...this.defs, ...this.pending()].map((d) => d.palette));
+    const want = opts?.palette;
     const free = FLOOR_PALETTES.findIndex((_, i) => !used.has(i));
-    const palette = free >= 0 ? free : (this.defs.length + this.cloning.size) % FLOOR_PALETTES.length;
-    return { id, name, repo, dir, palette, addedBy: by, addedAt: Date.now() };
+    const palette = want !== undefined && !used.has(want) ? want : free >= 0 ? free : (this.defs.length + this.cloning.size) % FLOOR_PALETTES.length;
+    return { id, name, repo, dir, palette, ...(opts?.cityId ? { cityId: opts.cityId } : {}), addedBy: by, addedAt: Date.now() };
   }
 
   private load() {
@@ -415,6 +417,7 @@ export class Building {
           repo: normalizeRepo(s.repo),
           dir: s.dir,
           palette: Number.isInteger(s.palette) && (s.palette as number) >= 0 ? (s.palette as number) : 0,
+          ...(typeof s.cityId === 'string' && /^[a-z0-9-]{1,40}$/.test(s.cityId) ? { cityId: s.cityId } : {}),
           addedBy: typeof s.addedBy === 'string' ? s.addedBy : '?',
           addedAt: typeof s.addedAt === 'number' ? s.addedAt : Date.now(),
         });

@@ -1,5 +1,6 @@
 // The building's floors: riding the elevator between them and up to the roof, and adding and taking
 // off floors.
+import { addCityFloor } from '../../city-floors.js';
 import type { FloorClientMsg } from '../../../shared/protocol.js';
 import { ROOF } from '../../../shared/rooftop.js';
 import { arrivalSpot, str } from '../../office/input.js';
@@ -46,6 +47,18 @@ export const floorHandlers = {
         ctx.toastAll(`🛗 New floor: ${r.name}, added by ${who}`);
         ctx.sendTo(c, { t: 'floor.added', repo, floor: floor.id });
       });
+  },
+  'floor.addCity'(ctx, c, msg) {
+    const who = c.peer.name;
+    const city = str(msg.city, 40);
+    const r = addCityFloor(ctx.building, city, who);
+    if (typeof r === 'string') return ctx.sendTo(c, { t: 'floor.added', repo: city, error: r });
+    const floor = ctx.openFloor(r);
+    ctx.floorsChanged();
+    if (!floor) return ctx.sendTo(c, { t: 'floor.added', repo: city, error: `Couldn't open the ${r.name} floor — see the office's log` });
+    console.log(`  ${who} added city floor ${r.name} (${r.dir})`);
+    ctx.toastAll(`🌆 New city floor: ${r.name}, added by ${who}`);
+    ctx.sendTo(c, { t: 'floor.added', repo: city, floor: floor.id });
   },
   'floor.cancel'(ctx, c, msg) {
     const who = c.peer.name;

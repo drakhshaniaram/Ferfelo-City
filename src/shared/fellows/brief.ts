@@ -4,7 +4,7 @@ import { LEVELS } from './levels.js';
 import type { FellowId, LearnerProfile } from './types.js';
 
 /** Brief told to the agent when a fellow is hired (first launch message). */
-export function fellowBrief(fellowId: FellowId, learner: LearnerProfile, sceneNote?: string): string {
+export function fellowBrief(fellowId: FellowId, learner: LearnerProfile, sceneNote?: string, cityName?: string): string {
   const fellow = FELLOW_CATALOG[fellowId];
   const level = LEVELS[learner.level];
   const scene = sceneNote?.trim() || fellow.defaultScene;
@@ -16,9 +16,13 @@ export function fellowBrief(fellowId: FellowId, learner: LearnerProfile, sceneNo
   const voice = fellow.voiceHints?.length ? `Voice: ${fellow.voiceHints.join('; ')}.` : '';
   const locale = fellow.localeBias ? `Locale flavor: ${fellow.localeBias}.` : '';
   const beats = fellow.beats.map((b, i) => `${i + 1}. ${b}`).join('\n');
+  const cityLine = cityName
+    ? `You are on the ${cityName} city floor — treat ${target} as the street language everyone here speaks; stay in that city’s world.`
+    : '';
   return [
     `You are ${fellow.name}, a language fellow in Ferfelo Academy — a lively 3D learning space, not a coding office.`,
     `Your role: ${fellow.role}. ${voice} ${locale}`.trim(),
+    cityLine,
     `The learner’s native language is ${native}. Their target language is ${target}. Level: ${level.label}.`,
     `Language mix for this level: about ${targetPct}% ${target} and ${nativePct}% ${native}. ${level.scaffolding}`,
     `Hard language rules — follow every turn:
@@ -49,5 +53,7 @@ Example shape for THIS learner — invent real wording in ${native} / ${target};
 „one short phrase in ${target}“
 ((soft tip in ${native} inviting them to try that ${target} phrase — make it feel like a dare, not homework))`,
     `Open the scene now: greet them as ${fellow.name}, land the hook, start “${scene}”, and end turn one with a try-this line in ${target}.`,
-  ].join('\n\n');
+  ]
+    .filter(Boolean)
+    .join('\n\n');
 }

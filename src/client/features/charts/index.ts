@@ -1,7 +1,9 @@
 /**
  * Rooftop Top-30 board: curated packs for the office sky city (see shared/charts.ts).
+ * On a city floor, prefers that floor's city over the building sky place.
  */
 import { chartPackForCity } from '../../../shared/charts';
+import { cityOf } from '../../../shared/cities';
 import { DJ_BOOTH, STAGE } from '../../../shared/layout';
 import type { Ctx } from '../../core/context';
 import { aside, hintTitle, key, onE } from '../../core/hint';
@@ -20,11 +22,16 @@ export interface ChartsDeps {
   onReady(fn: (r: Rooftop) => void): void;
 }
 
+function chartsCity(): string | undefined {
+  return cityOf(store.floors.find((f) => f.id === store.floor)?.cityId)?.skyCity ?? store.sky?.city;
+}
+
 export function installCharts(ctx: Ctx, deps: ChartsDeps) {
   function show() {
     ctx.sound.chartsOpen();
-    const city = store.sky?.city?.trim() || 'your sky city (set Outside in Settings)';
-    const pack = chartPackForCity(store.sky?.city);
+    const raw = chartsCity();
+    const city = raw?.trim() || 'your sky city (set Outside in Settings)';
+    const pack = chartPackForCity(raw);
     openCharts({
       pack,
       cityLabel: city,
@@ -39,7 +46,7 @@ export function installCharts(ctx: Ctx, deps: ChartsDeps) {
   ctx.interactions.define('charts', {
     reach: 4,
     hint: () => {
-      const pack = chartPackForCity(store.sky?.city);
+      const pack = chartPackForCity(chartsCity());
       return { k: pack.label, parts: [hintTitle('📻 Top 30 near you'), aside(pack.label), key('E', 'Open the charts')] };
     },
     use: onE(() => show()),

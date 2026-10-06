@@ -27,6 +27,21 @@ export class Decor {
     return d;
   }
 
+  /** Hang starter pictures when the walls are still bare (city floors). Returns how many hung. */
+  seedIfEmpty(placements: readonly unknown[], by: string): number {
+    if (this.items.length || !placements.length) return 0;
+    let n = 0;
+    for (const raw of placements) {
+      if (this.items.length >= MAX_DECOR) break;
+      const p = sanitizePlacement(raw);
+      if (typeof p === 'string') continue;
+      this.items.push({ ...p, id: randomBytes(5).toString('hex'), by, at: Date.now() });
+      n++;
+    }
+    if (n) this.save();
+    return n;
+  }
+
   /** Changes any part of a picture's placement; what the patch leaves out stays as it was. */
   update(id: string, patch: unknown): Decoration | string {
     const i = this.items.findIndex((d) => d.id === id);

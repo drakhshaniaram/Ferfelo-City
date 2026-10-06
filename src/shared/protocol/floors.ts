@@ -42,6 +42,8 @@ export interface FloorInfo {
   branch?: string;
   /** Which of FLOOR_PALETTES it's painted in. */
   palette: number;
+  /** Academy city floor id (Amsterdam, Hamburg, …). */
+  cityId?: string;
   /** Being cloned: on the elevator panel, but nobody can go there yet. */
   cloning?: boolean;
   /** How the clone is getting on, once git says. */
@@ -137,6 +139,8 @@ export type FloorClientMsg =
   | { t: 'floor.repos'; refresh?: boolean }
   /** Clone a repository and make it a new floor; answered with `floor.added` once it's there. */
   | { t: 'floor.add'; repo: string }
+  /** Academy: add a curated city floor; answered with `floor.added` (repo holds the city id). */
+  | { t: 'floor.addCity'; city: string }
   /** Stop a floor's clone before it's there (admins, or whoever added it); the one who added it hears `floor.added` with why. */
   | { t: 'floor.cancel'; floor: string }
   /** Take a floor off the building (admins only). Its checkout stays on disk; everyone on it rides to another floor. */

@@ -27,6 +27,7 @@ import { landedWork, landedWorkers, type Landed } from './leave-on-merge.js';
 import type { Ledger } from './usage.js';
 import type { Capacity } from './machine.js';
 import { officePrompt, type PromptSource } from './prompts.js';
+import { cityOf } from '../shared/cities.js';
 
 type ToastLevel = 'info' | 'warn' | 'error';
 
@@ -306,6 +307,8 @@ export class Floor {
     );
 
     this.decor = new Decor(dataDir);
+    const city = cityOf(def.cityId);
+    if (city) this.decor.seedIfEmpty(city.pictures, 'the academy');
     this.jukebox = new Jukebox(dataDir);
     this.whiteboard = new Whiteboard(dataDir);
     this.ready = this.workers.start();
@@ -398,6 +401,7 @@ export class Floor {
       dir: this.dir,
       branch: this.project.branch,
       palette: this.def.palette,
+      ...(this.def.cityId ? { cityId: this.def.cityId } : {}),
       addedBy: this.def.addedBy,
       addedAt: this.def.addedAt,
       workers: ws.filter((w) => !DESK_BY_ID.get(w.deskId)?.station).length,

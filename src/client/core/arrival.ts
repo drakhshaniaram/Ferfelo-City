@@ -22,6 +22,7 @@ import { routeTeamMessage } from '../ui/team';
 import { openTerminalFor, routeTerminalMessage } from '../ui/terminal';
 import { restarting, showRestarting, showUpgraded } from '../ui/upgrade';
 import { routeWhiteboardMessage } from '../features/whiteboard/ui';
+import { applyCityFloorLanguage } from '../features/fellows/city-language';
 import type { Ctx } from './context';
 import type { CoreState } from './ctx';
 import { builtFloors, pastTheWing } from './floors';
@@ -152,6 +153,8 @@ export function installArrival(ctx: Ctx, core: CoreState, parts: ArrivalParts) {
       travel.lift()?.setOpen(true);
     }
     parts.maps.offTheRoof();
+    const cityFloor = store.floors.find((f) => f.id === store.floor);
+    if (cityFloor?.cityId) applyCityFloorLanguage(cityFloor.cityId);
   });
   ctx.messages.on('signins', () => {
     // Someone who just joined starts here: their workers need their own Claude sign-in first.

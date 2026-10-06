@@ -10,6 +10,7 @@ import { officeFull, pressureNote } from '../../../shared/machine';
 import type { AgentEffort, AgentProvider, WorkerInfo } from '../../../shared/protocol';
 import type { FellowId } from '../../../shared/fellows';
 import { fellowBrief } from '../../../shared/fellows';
+import { cityOf } from '../../../shared/cities';
 import { isAcademyMode } from '../../../shared/mode';
 import { isAsleep, isBusy } from '../../../shared/status';
 import type { Ctx, Hint } from '../../core/context';
@@ -144,7 +145,8 @@ export function installWorkerActions(ctx: Ctx, core: CoreState, parts: WorkerAct
     openFellowHire({
       deskLabel: desk.label,
       onHire: (fellowId, sceneNote, o) => {
-        const brief = fellowBrief(fellowId, loadLearner(), sceneNote || undefined);
+        const city = cityOf(store.floors.find((f) => f.id === store.floor)?.cityId);
+        const brief = fellowBrief(fellowId, loadLearner(), sceneNote || undefined, city?.name);
         hire(deskId, brief, false, o.provider ?? 'cursor', o.model, o.effort, undefined, undefined, undefined, fellowId);
         const off = store.on('workers', () => {
           const w = store.workerAtDesk(deskId);

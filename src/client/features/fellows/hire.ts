@@ -1,6 +1,7 @@
 import './hire.css';
 import type { AgentEffort, AgentProvider } from '../../../shared/protocol';
 import { FELLOW_CATALOG, FELLOW_IDS, type FellowId } from '../../../shared/fellows';
+import { cityOf } from '../../../shared/cities';
 import { h, openModal } from '../../ui/dom';
 import { dictateField } from '../../ui/dictate';
 import { providerPicker, type ProviderPicker } from '../../ui/provider';
@@ -8,6 +9,7 @@ import { store } from '../../state';
 import { loadLearner, saveLearner } from '../../state/learner';
 import { pressureNote } from '../../../shared/machine';
 import { learnerFields } from './learner-ui';
+import { applyCityFloorLanguage } from './city-language';
 
 export interface FellowHireOpts {
   deskLabel: string;
@@ -16,7 +18,10 @@ export interface FellowHireOpts {
 
 /** Pick a language fellow, optional scene note, and provider — then hire at the desk. */
 export function openFellowHire(opts: FellowHireOpts) {
+  const cityFloor = store.floors.find((f) => f.id === store.floor);
+  if (cityFloor?.cityId) applyCityFloorLanguage(cityFloor.cityId, { quiet: true });
   let learner = loadLearner();
+  const city = cityOf(cityFloor?.cityId);
   let picked: FellowId | null = null;
   const list = h('div.fellow-list', { role: 'listbox', 'aria-label': 'Language fellows' });
   const scene = h('textarea', {
@@ -69,6 +74,9 @@ export function openFellowHire(opts: FellowHireOpts) {
       'div.body',
       {},
       warning ? h('p.setting-note.bad', { role: 'alert' }, warning) : null,
+      city
+        ? h('p.fellow-blurb', {}, `🌆 ${city.name} floor — fellows speak ${city.targetLanguage} by default (change Learner below if you want).`)
+        : null,
       h('p.fellow-blurb', {}, 'Pick a fellow and drop into their scene. They’ll pull you in with stakes, choices, and one line to try each turn — set your level, then invite.'),
       learnerRow,
       h('label', {}, 'Fellow'),

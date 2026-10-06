@@ -1,18 +1,20 @@
 import './elevator.css';
 import type { CloneProgress, FloorInfo, RepoChoice, ServerMsg } from '../../shared/protocol';
 import { cloneLabel, cloneStep, floorPalette, normalizeRepo, sameRepo } from '../../shared/floors';
+import { cityOf } from '../../shared/cities';
 import { isAcademyMode } from '../../shared/mode';
 import { ROOF, ROOF_NAME } from '../../shared/rooftop';
 import type { Net } from '../net';
 import { store } from '../state';
 import { h, openModal, timeAgo, toast, type Modal } from './dom';
 import { confirmDialog } from './prompt';
+import { mountCityAdd } from './elevator-cities';
 
 // The elevator's panel: a button for every floor (every project), and "add a project", which clones
 // one of the repositories the office's gh login can see and makes it a new floor. The first time
 // the office runs there are no floors, and this is where you start. Admins can take a floor off the
 // building here too; its checkout stays on disk. Under the floors, it goes down to the garage.
-// Academy opens a campus floor instead of the GitHub first-project wall.
+// Academy: add curated city floors (language + wall themes); coding floors stay under Staff.
 
 /**
  * The garage under the building, where the elevator goes too. It isn't a floor: it's down under the
@@ -75,6 +77,9 @@ export function openElevator(opts: ElevatorOptions): void {
   let error = '';
   // Academy never opens as a GitHub first-project wall; coding office still does when empty.
   let showAdd = !academy && (setup || !store.floors.length);
+  /** Academy: city picker is the default add panel. */
+  let showCities = academy;
+  let offCities: (() => void) | undefined;
   /** The search box and list are in place (rebuilding them would lose the focus mid-typing). */
   let built = false;
 
@@ -142,7 +147,7 @@ export function openElevator(opts: ElevatorOptions): void {
         'span.floor-text',
         {},
         h('span.floor-name', {}, f.name, here ? h('span.here-tag', {}, 'you are here') : mine ? h('span.here-tag', {}, 'your floor') : null),
-        h('span.floor-sub', {}, [f.repo ?? f.dir, f.cloning ? f.clone?.detail : ''].filter(Boolean).join(' · ')),
+        h('span.floor-sub', {}, [f.cityId ? `${cityOf(f.cityId)?.icon ?? '🌆'} ${cityOf(f.cityId)?.targetLanguage ?? ''} · city` : f.repo ?? f.dir, f.cloning ? f.clone?.detail : ''].filter(Boolean).join(' · ')),
         f.cloning ? cloneBar(f.clone) : null,
       ),
       h('span.floor-stats', {}, ...stats.flatMap((s, j) => (j ? [' ', s] : [s]))),
@@ -259,13 +264,47 @@ export function openElevator(opts: ElevatorOptions): void {
   };
 
   const renderAdd = () => {
-    if (!showAdd) {
-      const open = h('button.btn', { type: 'button' }, academy ? 'Staff: add a coding floor' : '➕ Add a project');
-      open.addEventListener('click', () => {
+    if (showCities && !showAdd) {
+      if (offCities) return;
+      addBtn.classList.add('hidden');
+      const staff = h('button.btn', { type: 'button' }, 'Staff: add a coding floor');
+      staff.addEventListener('click', () => {
+        offCities?.();
+        offCities = undefined;
+        showCities = false;
         showAdd = true;
         needRepos();
         renderAdd();
         setTimeout(() => input.focus(), 0);
+      });
+      const wrap = h('div');
+      addEl.replaceChildren(wrap, staff);
+      offCities = mountCityAdd({
+        net,
+        root: wrap,
+        ride: opts.ride,
+        close: () => modal.close(),
+        waitAdded: (fn) => {
+          addedWaiters.add(fn);
+          return () => addedWaiters.delete(fn);
+        },
+      });
+      return;
+    }
+    offCities?.();
+    offCities = undefined;
+    if (!showAdd) {
+      const open = h('button.btn', { type: 'button' }, academy ? '🌆 Add a city' : '➕ Add a project');
+      open.addEventListener('click', () => {
+        if (academy) {
+          showCities = true;
+          showAdd = false;
+        } else {
+          showAdd = true;
+          needRepos();
+        }
+        renderAdd();
+        if (!academy) setTimeout(() => input.focus(), 0);
       });
       addEl.replaceChildren(open);
       addBtn.classList.add('hidden');
@@ -394,8 +433,8 @@ export function openElevator(opts: ElevatorOptions): void {
         {},
         academy
           ? store.floors.length
-            ? 'Pick a campus floor to ride to. Coding floors stay under Staff: add a coding floor.'
-            : 'Ferfelo Academy opens a campus for you — Esc to look around, or wait for the campus floor.'
+            ? 'Pick a campus or city floor. Add Amsterdam, Hamburg, and more — each sets the practice language. Coding floors stay under Staff.'
+            : 'Ferfelo Academy opens a campus for you — or add a city floor for Dutch, German, and themed walls.'
           : store.floors.length
             ? 'Every project is a floor of this building. Pick a floor to ride to, or add another project.'
             : "Every project is a floor of this building, and it doesn't have any yet. Pick one of your repositories: the office clones it and it becomes the first floor.",
@@ -417,6 +456,7 @@ export function openElevator(opts: ElevatorOptions): void {
     onClose: () => {
       current = null;
       clearTimeout(startTimer);
+      offCities?.();
       addedWaiters.delete(onAdded);
       for (const off of unsubs) off();
     },
