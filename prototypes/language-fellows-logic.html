@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PROTOTYPE — Language fellows logic</title>
+  <style>
+    :root {
+      --bg: #f6f3ee;
+      --ink: #1c1917;
+      --muted: #57534e;
+      --line: #d6d3d1;
+      --accent: #0f766e;
+      --accent-soft: #ccfbf1;
+      --warn: #9a3412;
+      --panel: #ffffff;
+      --ok: #166534;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font: 16px/1.45 "Segoe UI", system-ui, sans-serif;
+      color: var(--ink);
+      background: var(--bg);
+    }
+    main {
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 28px 20px 64px;
+    }
+    h1 { font-size: 1.55rem; margin: 0 0 8px; letter-spacing: -0.02em; }
+    .badge {
+      display: inline-block;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--warn);
+      border: 1px solid var(--warn);
+      padding: 2px 8px;
+      margin-bottom: 12px;
+    }
+    .intro {
+      color: var(--muted);
+      margin: 0 0 24px;
+      max-width: 62ch;
+    }
+    .intro strong { color: var(--ink); font-weight: 600; }
+    section {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 16px 18px;
+      margin-bottom: 16px;
+    }
+    section h2 {
+      font-size: 0.95rem;
+      margin: 0 0 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--muted);
+    }
+    .state-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px 18px;
+    }
+    @media (max-width: 700px) {
+      .state-grid { grid-template-columns: 1fr; }
+    }
+    .field label {
+      display: block;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--muted);
+      margin-bottom: 2px;
+    }
+    .field .value {
+      font-size: 0.98rem;
+      min-height: 1.4em;
+      word-break: break-word;
+    }
+    .field.wide { grid-column: 1 / -1; }
+    .changed {
+      background: var(--accent-soft);
+      outline: 2px solid var(--accent);
+      border-radius: 6px;
+      padding: 4px 8px;
+      margin: -4px -8px;
+    }
+    .illegal {
+      color: var(--warn);
+      font-size: 0.9rem;
+      margin: 8px 0 0;
+      min-height: 1.3em;
+    }
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    button {
+      font: inherit;
+      cursor: pointer;
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--ink);
+      border-radius: 8px;
+      padding: 8px 12px;
+    }
+    button:hover { border-color: var(--accent); }
+    button.primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+    button:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+    .group-label {
+      width: 100%;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--muted);
+      margin: 6px 0 2px;
+    }
+    .tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+    .tabs button.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+    .scenario-desc {
+      color: var(--muted);
+      margin: 0 0 12px;
+      max-width: 62ch;
+    }
+    .step-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+    .step-row.done .step-label { color: var(--ok); text-decoration: line-through; }
+    .step-row.current .step-label { font-weight: 600; }
+    .step-num {
+      width: 1.6rem;
+      height: 1.6rem;
+      border-radius: 50%;
+      border: 1px solid var(--line);
+      display: grid;
+      place-items: center;
+      font-size: 0.8rem;
+      flex-shrink: 0;
+    }
+    .step-row.current .step-num {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+    .step-row.done .step-num {
+      background: var(--accent-soft);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+    ul.compact { margin: 0; padding-left: 1.1rem; }
+    ul.compact li { margin: 2px 0; }
+  </style>
+</head>
+<body>
+<main>
+  <div class="badge">Throwaway prototype — not production</div>
+  <h1>Language fellows — does this model feel right?</h1>
+  <p class="intro">
+    Question: instead of office coding workers, can we model <strong>cultural-context fellows</strong>
+    that help a <strong>newbie</strong> experience life in a new language — hire several, run one scene at a time,
+    scaffold speech, and use scene tools (maps, YouTube, etc.) — without the state getting weird?
+    Seed language: <strong>German</strong>. Click free-play or a guided walkthrough.
+  </p>
+
+  <section>
+    <h2>Current state</h2>
+    <div id="state-panel" class="state-grid"></div>
+    <p id="illegal" class="illegal"></p>
+  </section>
+
+  <section>
+    <h2>Free play</h2>
+    <div class="actions" id="free-play"></div>
+  </section>
+
+  <section>
+    <h2>Guided walkthroughs</h2>
+    <div class="tabs" id="scenario-tabs"></div>
+    <p class="scenario-desc" id="scenario-desc"></p>
+    <div id="scenario-steps"></div>
+  </section>
+</main>
+
+<script>
+/**
+ * PORTABLE MODULE — LanguageFellowsLogic
+ * Pure reducer + helpers. No DOM. Lift later into real code if the model holds.
+ */
+const LanguageFellowsLogic = (() => {
+  const CATALOG = {
+    oktoberfest: {
+      id: 'oktoberfest',
+      name: 'Lena',
+      role: 'Oktoberfest / Hamburg celebration guide',
+      defaultScene: 'Celebrate Oktoberfest-style in Hamburg with locals',
+      tools: ['local-tips', 'phrase-cards'],
+    },
+    chef: {
+      id: 'chef',
+      name: 'Marco',
+      role: 'Home cooking coach',
+      defaultScene: 'Cook a simple dinner for your girlfriend',
+      tools: ['recipe-steps', 'kitchen-vocab'],
+    },
+    checkin: {
+      id: 'checkin',
+      name: 'Sofia',
+      role: 'Talk partner (emotional check-in — not clinical therapy)',
+      defaultScene: 'Gentle check-in about how moving feels',
+      tools: ['feeling-words'],
+    },
+    amsterdam: {
+      id: 'amsterdam',
+      name: 'Joost',
+      role: 'Rainy-day Amsterdam itinerary guide',
+      defaultScene: 'Plan a rainy afternoon in Amsterdam',
+      tools: ['tripadvisor-stub', 'transit-hints'],
+    },
+    biology: {
+      id: 'biology',
+      name: 'Dr. Park',
+      role: 'Curious science explainer',
+      defaultScene: 'Understand what Cola Zero does in the body',
+      tools: ['simple-diagram'],
+    },
+    news: {
+      id: 'news',
+      name: 'Alex',
+      role: 'US news hangout pal',
+      defaultScene: 'Skim cool US news together in German',
+      tools: ['headline-digest'],
+    },
+    youtube: {
+      id: 'youtube',
+      name: 'Maya',
+      role: 'YouTube shadowing coach',
+      defaultScene: 'Shadow a short German clip on the screen',
+      tools: ['youtube-stub', 'shadow-loop'],
+    },
+  };
+
+  const LEVELS = {
+    newbie: {
+      label: 'Newbie',
+      targetShare: 0.35,
+      nativeShare: 0.65,
+      scaffolding: 'Fellow mostly uses your native language; target phrases are short and repeated.',
+    },
+    growing: {
+      label: 'Growing',
+      targetShare: 0.65,
+      nativeShare: 0.35,
+      scaffolding: 'Fellow mostly uses the target language; native only when you stall.',
+    },
+    immersed: {
+      label: 'Immersed',
+      targetShare: 0.9,
+      nativeShare: 0.1,
+      scaffolding: 'Fellow stays in the target language; meaning via gesture and simpler words.',
+    },
+  };
+
+  function initialState() {
+    return {
+      learner: {
+        nativeLanguage: 'English',
+        targetLanguage: 'German',
+        level: 'newbie',
+      },
+      hired: [], // fellow ids
+      session: null, // { fellowId, scene, turn, lastMove, toolsUsed[], vocab[], learnerAttempt, fellowReply }
+      history: [], // ended scene summaries
+      lastChange: 'Fresh start — no fellows hired yet.',
+      lastIllegal: null,
+    };
+  }
+
+  function clone(state) {
+    return structuredClone(state);
+  }
+
+  function mark(state, message) {
+    state.lastChange = message;
+    state.lastIllegal = null;
+    return state;
+  }
+
+  function fail(state, reason) {
+    const next = clone(state);
+    next.lastIllegal = reason;
+    return next;
+  }
+
+  function scaffoldingFor(level) {
+    return LEVELS[level] || LEVELS.newbie;
+  }
+
+  function reduce(state, action) {
+    const s = clone(state);
+    switch (action.type) {
+      case 'RESET':
+        return mark(initialState(), 'Reset to empty hub.');
+
+      case 'SET_LEVEL': {
+        if (!LEVELS[action.level]) return fail(s, 'Unknown level.');
+        if (s.session) return fail(s, 'Finish or leave the current scene before changing level.');
+        s.learner.level = action.level;
+        return mark(s, `Learner level → ${LEVELS[action.level].label}.`);
+      }
+
+      case 'SET_TARGET_LANGUAGE': {
+        if (s.session) return fail(s, 'Finish or leave the current scene before changing language.');
+        s.learner.targetLanguage = action.language;
+        return mark(s, `Target language → ${action.language}.`);
+      }
+
+      case 'HIRE': {
+        const spec = CATALOG[action.fellowId];
+        if (!spec) return fail(s, 'Unknown fellow.');
+        if (s.hired.includes(action.fellowId)) return fail(s, `${spec.name} is already hired.`);
+        s.hired.push(action.fellowId);
+        return mark(s, `Hired ${spec.name} (${spec.role}).`);
+      }
+
+      case 'SEND_HOME': {
+        const spec = CATALOG[action.fellowId];
+        if (!spec) return fail(s, 'Unknown fellow.');
+        if (!s.hired.includes(action.fellowId)) return fail(s, `${spec.name} is not hired.`);
+        if (s.session && s.session.fellowId === action.fellowId) {
+          return fail(s, 'Leave the scene with this fellow before sending them home.');
+        }
+        s.hired = s.hired.filter((id) => id !== action.fellowId);
+        return mark(s, `Sent ${spec.name} home.`);
+      }
+
+      case 'START_SCENE': {
+        const fellowId = action.fellowId;
+        const spec = CATALOG[fellowId];
+        if (!spec) return fail(s, 'Unknown fellow.');
+        if (!s.hired.includes(fellowId)) return fail(s, `Hire ${spec.name} first.`);
+        if (s.session) return fail(s, 'Only one scene at a time — end or leave the current one.');
+        const level = scaffoldingFor(s.learner.level);
+        s.session = {
+          fellowId,
+          scene: spec.defaultScene,
+          turn: 1,
+          lastMove: 'scene-opened',
+          toolsUsed: [],
+          vocab: [],
+          learnerAttempt: null,
+          fellowReply: `${spec.name} greets you. Mix ≈${Math.round(level.targetShare * 100)}% ${s.learner.targetLanguage} / ${Math.round(level.nativeShare * 100)}% ${s.learner.nativeLanguage}. ${level.scaffolding}`,
+        };
+        return mark(s, `Started scene with ${spec.name}: “${spec.defaultScene}”.`);
+      }
+
+      case 'LEARNER_TRIES': {
+        if (!s.session) return fail(s, 'No active scene.');
+        const phrase = action.phrase || '…';
+        s.session.learnerAttempt = phrase;
+        s.session.lastMove = 'learner-tried';
+        s.session.turn += 1;
+        const spec = CATALOG[s.session.fellowId];
+        const level = scaffoldingFor(s.learner.level);
+        if (s.learner.level === 'newbie') {
+          s.session.fellowReply = `${spec.name} smiles, repeats a simpler chunk in ${s.learner.targetLanguage}, then glosses in ${s.learner.nativeLanguage}: “Nice try — say it with me.”`;
+        } else {
+          s.session.fellowReply = `${spec.name} stays mostly in ${s.learner.targetLanguage}, nudges the missing word, keeps the scene moving.`;
+        }
+        if (!s.session.vocab.includes(phrase) && phrase !== '…') {
+          s.session.vocab.push(phrase);
+        }
+        return mark(s, `You tried: “${phrase}”. Scaffolding (${level.label}) applied.`);
+      }
+
+      case 'ASK_SLOW': {
+        if (!s.session) return fail(s, 'No active scene.');
+        const spec = CATALOG[s.session.fellowId];
+        s.session.turn += 1;
+        s.session.lastMove = 'ask-slow';
+        s.session.fellowReply = `${spec.name} slows down, points, and rebuilds one sentence at newbie pace — even if your level is higher.`;
+        return mark(s, 'Asked fellow to slow down / simplify.');
+      }
+
+      case 'USE_TOOL': {
+        if (!s.session) return fail(s, 'No active scene.');
+        const spec = CATALOG[s.session.fellowId];
+        const tool = action.tool;
+        if (!spec.tools.includes(tool)) {
+          return fail(s, `${spec.name} does not have tool “${tool}”.`);
+        }
+        if (s.session.toolsUsed.includes(tool)) {
+          return fail(s, `Tool “${tool}” already used this scene (prototype: once is enough).`);
+        }
+        s.session.toolsUsed.push(tool);
+        s.session.turn += 1;
+        s.session.lastMove = `tool:${tool}`;
+        const toolLines = {
+          'local-tips': 'Lena pins a Hamburg tent tip and a toast phrase on your card.',
+          'phrase-cards': 'Three survival phrases appear: Prost!, Noch ein Bier bitte, Wo ist die Toilette?',
+          'recipe-steps': 'Marco puts step 1 on the counter: wash veggies — vocab flash.',
+          'kitchen-vocab': ' Knife, pan, stir — labels in German with English tiny underneath.',
+          'feeling-words': 'Sofia offers a small feelings palette: müde, aufgeregt, einsam, froh.',
+          'tripadvisor-stub': 'Joost pulls a stub TripAdvisor list: museum, café with big windows, bookstore.',
+          'transit-hints': 'Tram vs walk callout appears for the rainy route.',
+          'simple-diagram': 'Dr. Park sketches caffeine + sweetener paths in baby German.',
+          'headline-digest': 'Alex drops three US headlines rewritten for learners.',
+          'youtube-stub': 'Maya turns on the screen and queues a 45s clip.',
+          'shadow-loop': 'Clip loops; Maya marks stress beats for you to shadow.',
+        };
+        s.session.fellowReply = toolLines[tool] || `${spec.name} used ${tool}.`;
+        return mark(s, `Used tool: ${tool}.`);
+      }
+
+      case 'SWITCH_FELLOW_IN_SCENE': {
+        // Deliberately awkward: should this be allowed?
+        if (!s.session) return fail(s, 'No active scene.');
+        const nextId = action.fellowId;
+        const next = CATALOG[nextId];
+        if (!next) return fail(s, 'Unknown fellow.');
+        if (!s.hired.includes(nextId)) return fail(s, `Hire ${next.name} first.`);
+        if (nextId === s.session.fellowId) return fail(s, 'Already with this fellow.');
+        // Model choice under test: mid-scene switch keeps vocab, clears tools, changes scene.
+        const prev = CATALOG[s.session.fellowId];
+        s.session.fellowId = nextId;
+        s.session.scene = next.defaultScene;
+        s.session.toolsUsed = [];
+        s.session.turn += 1;
+        s.session.lastMove = 'switched-fellow';
+        s.session.fellowReply = `${next.name} takes over from ${prev.name}. Same learner level; new scene context.`;
+        return mark(s, `Switched mid-scene: ${prev.name} → ${next.name}.`);
+      }
+
+      case 'END_SCENE': {
+        if (!s.session) return fail(s, 'No active scene to end.');
+        const spec = CATALOG[s.session.fellowId];
+        s.history.unshift({
+          fellowId: s.session.fellowId,
+          scene: s.session.scene,
+          turns: s.session.turn,
+          vocab: [...s.session.vocab],
+          toolsUsed: [...s.session.toolsUsed],
+        });
+        s.session = null;
+        return mark(s, `Ended scene with ${spec.name}. Vocab saved to history.`);
+      }
+
+      case 'LEAVE_SCENE': {
+        if (!s.session) return fail(s, 'No active scene.');
+        const spec = CATALOG[s.session.fellowId];
+        s.session = null;
+        return mark(s, `Left scene with ${spec.name} without saving vocab.`);
+      }
+
+      default:
+        return fail(s, `Unknown action ${action.type}`);
+    }
+  }
+
+  return { CATALOG, LEVELS, initialState, reduce };
+})();
+</script>
+
+<script>
+/** Page shell — drives the pure module. Throwaway. */
+(function () {
+  const { CATALOG, LEVELS, initialState, reduce } = LanguageFellowsLogic;
+  let state = initialState();
+  let changedPaths = new Set();
+  let scenarioId = 'oktoberfest';
+  let stepIndex = 0;
+
+  const SCENARIOS = [
+    {
+      id: 'oktoberfest',
+      title: 'Oktoberfest in Hamburg',
+      description: 'Happy path: hire Lena, open the celebration scene, use a tip tool, try a newbie toast, end and keep vocab.',
+      steps: [
+        { label: 'Hire Lena (Oktoberfest guide)', action: { type: 'HIRE', fellowId: 'oktoberfest' } },
+        { label: 'Start her Hamburg celebration scene', action: { type: 'START_SCENE', fellowId: 'oktoberfest' } },
+        { label: 'Use local tips', action: { type: 'USE_TOOL', tool: 'local-tips' } },
+        { label: 'Try saying “Prost!”', action: { type: 'LEARNER_TRIES', phrase: 'Prost!' } },
+        { label: 'End scene (save vocab)', action: { type: 'END_SCENE' } },
+      ],
+    },
+    {
+      id: 'rain-day',
+      title: 'Rainy Amsterdam + tool boundary',
+      description: 'Hire Joost, start the rainy-day plan, use TripAdvisor stub. Then try a YouTube tool he does not have — should be illegal.',
+      steps: [
+        { label: 'Hire Joost', action: { type: 'HIRE', fellowId: 'amsterdam' } },
+        { label: 'Start rainy Amsterdam scene', action: { type: 'START_SCENE', fellowId: 'amsterdam' } },
+        { label: 'Use tripadvisor-stub', action: { type: 'USE_TOOL', tool: 'tripadvisor-stub' } },
+        { label: 'Illegal: use youtube-stub (not his tool)', action: { type: 'USE_TOOL', tool: 'youtube-stub' } },
+        { label: 'End scene', action: { type: 'END_SCENE' } },
+      ],
+    },
+    {
+      id: 'one-scene',
+      title: 'Only one scene at a time',
+      description: 'Hire chef + news pal, start cooking, then try to start news without ending — should block. End cooking, then start news.',
+      steps: [
+        { label: 'Hire Marco (chef)', action: { type: 'HIRE', fellowId: 'chef' } },
+        { label: 'Hire Alex (news)', action: { type: 'HIRE', fellowId: 'news' } },
+        { label: 'Start cooking scene', action: { type: 'START_SCENE', fellowId: 'chef' } },
+        { label: 'Illegal: start news while cooking', action: { type: 'START_SCENE', fellowId: 'news' } },
+        { label: 'End cooking', action: { type: 'END_SCENE' } },
+        { label: 'Start news hangout', action: { type: 'START_SCENE', fellowId: 'news' } },
+      ],
+    },
+    {
+      id: 'mid-switch',
+      title: 'Mid-scene fellow switch (awkward case)',
+      description: 'Watch whether swapping fellows mid-scene feels right: vocab kept, tools cleared, new scene text. Push back if this should be forbidden.',
+      steps: [
+        { label: 'Hire Maya (YouTube)', action: { type: 'HIRE', fellowId: 'youtube' } },
+        { label: 'Hire Dr. Park (biology)', action: { type: 'HIRE', fellowId: 'biology' } },
+        { label: 'Start YouTube shadowing', action: { type: 'START_SCENE', fellowId: 'youtube' } },
+        { label: 'Use youtube-stub', action: { type: 'USE_TOOL', tool: 'youtube-stub' } },
+        { label: 'Try a shadow line', action: { type: 'LEARNER_TRIES', phrase: 'Was ist das?' } },
+        { label: 'Switch to Dr. Park mid-scene', action: { type: 'SWITCH_FELLOW_IN_SCENE', fellowId: 'biology' } },
+        { label: 'End scene', action: { type: 'END_SCENE' } },
+      ],
+    },
+    {
+      id: 'level-lock',
+      title: 'Level change while in scene',
+      description: 'Start a check-in, then try to jump to Immersed mid-scene — should be illegal. Leave scene, then change level.',
+      steps: [
+        { label: 'Hire Sofia (check-in)', action: { type: 'HIRE', fellowId: 'checkin' } },
+        { label: 'Start check-in scene', action: { type: 'START_SCENE', fellowId: 'checkin' } },
+        { label: 'Illegal: set level Immersed', action: { type: 'SET_LEVEL', level: 'immersed' } },
+        { label: 'Leave scene (no save)', action: { type: 'LEAVE_SCENE' } },
+        { label: 'Set level Immersed', action: { type: 'SET_LEVEL', level: 'immersed' } },
+      ],
+    },
+  ];
+
+  function pathEqual(a, b) {
+    return JSON.stringify(a) !== JSON.stringify(b);
+  }
+
+  function diffPaths(prev, next, base = '') {
+    const paths = new Set();
+    const keys = new Set([...Object.keys(prev || {}), ...Object.keys(next || {})]);
+    for (const k of keys) {
+      const p = base ? `${base}.${k}` : k;
+      const pv = prev?.[k];
+      const nv = next?.[k];
+      if (pv && nv && typeof pv === 'object' && typeof nv === 'object' && !Array.isArray(pv) && !Array.isArray(nv)) {
+        for (const sub of diffPaths(pv, nv, p)) paths.add(sub);
+      } else if (pathEqual(pv, nv)) {
+        paths.add(p);
+      }
+    }
+    return paths;
+  }
+
+  function dispatch(action) {
+    const prev = state;
+    state = reduce(state, action);
+    changedPaths = diffPaths(prev, state);
+    // lastChange / lastIllegal always highlighted
+    changedPaths.add('lastChange');
+    if (state.lastIllegal) changedPaths.add('lastIllegal');
+    render();
+  }
+
+  function cls(path) {
+    return changedPaths.has(path) || [...changedPaths].some((p) => p.startsWith(path + '.'))
+      ? 'value changed'
+      : 'value';
+  }
+
+  function hiredList() {
+    if (!state.hired.length) return '— none —';
+    return '<ul class="compact">' + state.hired.map((id) => {
+      const f = CATALOG[id];
+      return `<li><strong>${f.name}</strong> — ${f.role}</li>`;
+    }).join('') + '</ul>';
+  }
+
+  function sessionBlock() {
+    if (!state.session) return '— idle —';
+    const f = CATALOG[state.session.fellowId];
+    const sc = state.session;
+    return `<ul class="compact">
+      <li><strong>Fellow:</strong> ${f.name}</li>
+      <li><strong>Scene:</strong> ${sc.scene}</li>
+      <li><strong>Turn:</strong> ${sc.turn} · last move: ${sc.lastMove}</li>
+      <li><strong>Your last try:</strong> ${sc.learnerAttempt ?? '—'}</li>
+      <li><strong>Fellow reply:</strong> ${sc.fellowReply}</li>
+      <li><strong>Tools used:</strong> ${sc.toolsUsed.length ? sc.toolsUsed.join(', ') : '—'}</li>
+      <li><strong>Vocab this scene:</strong> ${sc.vocab.length ? sc.vocab.join(', ') : '—'}</li>
+    </ul>`;
+  }
+
+  function historyBlock() {
+    if (!state.history.length) return '— none —';
+    return '<ul class="compact">' + state.history.map((h) => {
+      const f = CATALOG[h.fellowId];
+      return `<li>${f.name}: ${h.scene} · ${h.turns} turns · vocab [${h.vocab.join(', ') || '—'}] · tools [${h.toolsUsed.join(', ') || '—'}]</li>`;
+    }).join('') + '</ul>';
+  }
+
+  function renderState() {
+    const level = LEVELS[state.learner.level];
+    const panel = document.getElementById('state-panel');
+    panel.innerHTML = `
+      <div class="field"><label>Native language</label><div class="${cls('learner.nativeLanguage')}">${state.learner.nativeLanguage}</div></div>
+      <div class="field"><label>Target language</label><div class="${cls('learner.targetLanguage')}">${state.learner.targetLanguage}</div></div>
+      <div class="field"><label>Level</label><div class="${cls('learner.level')}">${level.label} — ~${Math.round(level.targetShare * 100)}% target / ${Math.round(level.nativeShare * 100)}% native</div></div>
+      <div class="field"><label>Scaffolding rule</label><div class="${cls('learner.level')}">${level.scaffolding}</div></div>
+      <div class="field wide"><label>Hired fellows</label><div class="${cls('hired')}">${hiredList()}</div></div>
+      <div class="field wide"><label>Active session</label><div class="${cls('session')}">${sessionBlock()}</div></div>
+      <div class="field wide"><label>Finished scenes</label><div class="${cls('history')}">${historyBlock()}</div></div>
+      <div class="field wide"><label>What just changed</label><div class="${cls('lastChange')}">${state.lastChange}</div></div>
+    `;
+    document.getElementById('illegal').textContent = state.lastIllegal
+      ? `Blocked: ${state.lastIllegal}`
+      : '';
+  }
+
+  function btn(label, action, primary) {
+    const b = document.createElement('button');
+    b.textContent = label;
+    if (primary) b.className = 'primary';
+    b.addEventListener('click', () => dispatch(action));
+    return b;
+  }
+
+  function renderFreePlay() {
+    const box = document.getElementById('free-play');
+    box.innerHTML = '';
+
+    const addGroup = (title) => {
+      const g = document.createElement('div');
+      g.className = 'group-label';
+      g.textContent = title;
+      box.appendChild(g);
+    };
+
+    addGroup('Learner');
+    box.appendChild(btn('Level: Newbie', { type: 'SET_LEVEL', level: 'newbie' }));
+    box.appendChild(btn('Level: Growing', { type: 'SET_LEVEL', level: 'growing' }));
+    box.appendChild(btn('Level: Immersed', { type: 'SET_LEVEL', level: 'immersed' }));
+    box.appendChild(btn('Target: German', { type: 'SET_TARGET_LANGUAGE', language: 'German' }));
+    box.appendChild(btn('Target: Dutch', { type: 'SET_TARGET_LANGUAGE', language: 'Dutch' }));
+
+    addGroup('Hire / send home');
+    Object.values(CATALOG).forEach((f) => {
+      box.appendChild(btn(`Hire ${f.name}`, { type: 'HIRE', fellowId: f.id }));
+      box.appendChild(btn(`Send ${f.name} home`, { type: 'SEND_HOME', fellowId: f.id }));
+    });
+
+    addGroup('Scenes');
+    Object.values(CATALOG).forEach((f) => {
+      box.appendChild(btn(`Start with ${f.name}`, { type: 'START_SCENE', fellowId: f.id }, true));
+    });
+    box.appendChild(btn('End scene (save)', { type: 'END_SCENE' }, true));
+    box.appendChild(btn('Leave scene (no save)', { type: 'LEAVE_SCENE' }));
+
+    addGroup('In-scene moves');
+    box.appendChild(btn('Try: “Prost!”', { type: 'LEARNER_TRIES', phrase: 'Prost!' }));
+    box.appendChild(btn('Try: “Noch ein Bier bitte”', { type: 'LEARNER_TRIES', phrase: 'Noch ein Bier bitte' }));
+    box.appendChild(btn('Try: “Was ist das?”', { type: 'LEARNER_TRIES', phrase: 'Was ist das?' }));
+    box.appendChild(btn('Ask to slow down', { type: 'ASK_SLOW' }));
+
+    addGroup('Tools (only legal if active fellow owns them)');
+    const allTools = [...new Set(Object.values(CATALOG).flatMap((f) => f.tools))];
+    allTools.forEach((t) => box.appendChild(btn(`Tool: ${t}`, { type: 'USE_TOOL', tool: t })));
+
+    addGroup('Awkward: mid-scene switch');
+    Object.values(CATALOG).forEach((f) => {
+      box.appendChild(btn(`Switch to ${f.name}`, { type: 'SWITCH_FELLOW_IN_SCENE', fellowId: f.id }));
+    });
+
+    addGroup('Reset');
+    box.appendChild(btn('Reset all', { type: 'RESET' }));
+  }
+
+  function renderScenarios() {
+    const tabs = document.getElementById('scenario-tabs');
+    tabs.innerHTML = '';
+    SCENARIOS.forEach((sc) => {
+      const b = document.createElement('button');
+      b.textContent = sc.title;
+      if (sc.id === scenarioId) b.classList.add('active');
+      b.addEventListener('click', () => {
+        scenarioId = sc.id;
+        stepIndex = 0;
+        state = initialState();
+        changedPaths = new Set(['lastChange']);
+        state.lastChange = `Walkthrough ready: ${sc.title}. Press step 1.`;
+        render();
+      });
+      tabs.appendChild(b);
+    });
+
+    const sc = SCENARIOS.find((s) => s.id === scenarioId);
+    document.getElementById('scenario-desc').textContent = sc.description;
+    const steps = document.getElementById('scenario-steps');
+    steps.innerHTML = '';
+    sc.steps.forEach((step, i) => {
+      const row = document.createElement('div');
+      row.className = 'step-row' + (i < stepIndex ? ' done' : i === stepIndex ? ' current' : '');
+      const num = document.createElement('div');
+      num.className = 'step-num';
+      num.textContent = String(i + 1);
+      const label = document.createElement('div');
+      label.className = 'step-label';
+      label.textContent = step.label;
+      const go = document.createElement('button');
+      go.textContent = i === stepIndex ? 'Do this step' : i < stepIndex ? 'Done' : 'Locked';
+      go.disabled = i !== stepIndex;
+      if (i === stepIndex) go.className = 'primary';
+      go.addEventListener('click', () => {
+        dispatch(step.action);
+        stepIndex = Math.min(stepIndex + 1, sc.steps.length);
+        renderScenarios();
+      });
+      row.appendChild(num);
+      row.appendChild(label);
+      row.appendChild(go);
+      steps.appendChild(row);
+    });
+  }
+
+  function render() {
+    renderState();
+    renderFreePlay();
+    renderScenarios();
+  }
+
+  render();
+})();
+</script>
+</body>
+</html>
