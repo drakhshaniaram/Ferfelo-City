@@ -7,7 +7,7 @@ Ferfelo Academy turns empty desks into seats for **language fellows**: cultural-
 ## Hire
 
 1. Walk to an empty desk and press **E**.
-2. Set native language, target language, and level (**Newbie** / **Growing** / **Immersed**). Kept in this browser.
+2. Pick **native** and **learning** languages from the list (Persian, Central Kurdish (Sorani), English, German, French, and more — either side), plus level (**Newbie** / **Growing** / **Immersed**). Kept in this browser.
 3. Pick a fellow and optionally rewrite the scene note.
 4. Invite — fellows default to **Cursor** (✏️ Edit to pick another provider).
 
@@ -37,7 +37,7 @@ The fellow sits down under their catalog name (Lena, Marco, …) with a brief th
 
 ## Code
 
-- Catalog and briefs: `src/shared/fellows.ts`
+- Catalog, language list, and briefs: `src/shared/fellows.ts`
 - Hire UI: `src/client/features/fellows/`
 - Learner profile: `src/client/state/learner.ts`
 - Desk **E** opens fellow hire: `src/client/features/workers/actions.ts`

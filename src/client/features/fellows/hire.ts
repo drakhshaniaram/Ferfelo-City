@@ -1,6 +1,13 @@
 import './hire.css';
 import type { AgentEffort, AgentProvider } from '../../../shared/protocol';
-import { FELLOW_CATALOG, FELLOW_IDS, type FellowId, type LearnerProfile } from '../../../shared/fellows';
+import {
+  FELLOW_CATALOG,
+  FELLOW_IDS,
+  LEARNER_LANGUAGES,
+  type FellowId,
+  type LearnerLanguage,
+  type LearnerProfile,
+} from '../../../shared/fellows';
 import { h, openModal } from '../../ui/dom';
 import { dictateField } from '../../ui/dictate';
 import { providerPicker, type ProviderPicker } from '../../ui/provider';
@@ -101,9 +108,23 @@ export function openFellowHire(opts: FellowHireOpts) {
   });
 }
 
+function languageSelect(value: string, ariaLabel: string): HTMLSelectElement {
+  const sel = h('select', { 'aria-label': ariaLabel }) as HTMLSelectElement;
+  for (const lang of LEARNER_LANGUAGES) {
+    const opt = h('option', { value: lang }, lang) as HTMLOptionElement;
+    if (lang === value) opt.selected = true;
+    sel.append(opt);
+  }
+  // Old free-text saves that aren’t in the catalog — keep them selectable until changed.
+  if (value && !(LEARNER_LANGUAGES as readonly string[]).includes(value)) {
+    sel.prepend(h('option', { value, selected: 'true' }, value) as HTMLOptionElement);
+  }
+  return sel;
+}
+
 function learnerFields(learner: LearnerProfile, onChange: (next: LearnerProfile) => void): HTMLElement {
-  const native = h('input', { type: 'text', value: learner.nativeLanguage, 'aria-label': 'Native language', maxlength: 40 }) as HTMLInputElement;
-  const target = h('input', { type: 'text', value: learner.targetLanguage, 'aria-label': 'Target language', maxlength: 40 }) as HTMLInputElement;
+  const native = languageSelect(learner.nativeLanguage, 'Native language');
+  const target = languageSelect(learner.targetLanguage, 'Target language');
   const levels = h('div.seg.fellow-levels', { role: 'radiogroup', 'aria-label': 'Learner level' });
   const paint = () => {
     levels.replaceChildren(
@@ -130,8 +151,8 @@ function learnerFields(learner: LearnerProfile, onChange: (next: LearnerProfile)
   const commit = () => {
     learner = {
       ...learner,
-      nativeLanguage: native.value.trim() || learner.nativeLanguage,
-      targetLanguage: target.value.trim() || learner.targetLanguage,
+      nativeLanguage: (native.value || learner.nativeLanguage) as LearnerLanguage,
+      targetLanguage: (target.value || learner.targetLanguage) as LearnerLanguage,
     };
     onChange(learner);
   };
@@ -141,7 +162,8 @@ function learnerFields(learner: LearnerProfile, onChange: (next: LearnerProfile)
     'div.fellow-learner',
     {},
     h('label', {}, 'Your languages'),
-    h('div.fellow-langs', {}, native, h('span', {}, '→'), target),
+    h('div.fellow-langs', {}, native, h('span.fellow-lang-arrow', { 'aria-hidden': 'true' }, '→'), target),
+    h('div.fellow-lang-hints', {}, h('small', {}, 'Native'), h('small', {}, 'Learning')),
     h('label', { style: 'margin-top:8px' }, 'Level'),
     levels,
   );

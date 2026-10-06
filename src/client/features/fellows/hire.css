@@ -17,9 +17,36 @@
   align-items: center;
   gap: 8px;
 }
-.fellow-hire .fellow-langs input {
+.fellow-hire .fellow-langs select {
   flex: 1;
   min-width: 0;
+  font: inherit;
+  font-weight: 700;
+  padding: 6px 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  color: inherit;
+}
+.fellow-hire .fellow-lang-arrow {
+  flex-shrink: 0;
+  color: var(--muted);
+  font-weight: 800;
+}
+.fellow-hire .fellow-lang-hints {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 4px;
+  padding: 0 2px;
+}
+.fellow-hire .fellow-lang-hints small {
+  flex: 1;
+  color: var(--muted);
+  font-weight: 600;
+}
+.fellow-hire .fellow-lang-hints small:last-child {
+  text-align: right;
 }
 .fellow-hire .fellow-levels {
   margin-top: 4px;

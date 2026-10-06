@@ -1,6 +1,15 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { DEFAULT_LEARNER, FELLOW_CATALOG, FELLOW_IDS, fellowBrief, isFellowId, sanitizeLearner } from '../src/shared/fellows.js';
+import {
+  DEFAULT_LEARNER,
+  FELLOW_CATALOG,
+  FELLOW_IDS,
+  LEARNER_LANGUAGES,
+  fellowBrief,
+  isFellowId,
+  resolveLearnerLanguage,
+  sanitizeLearner,
+} from '../src/shared/fellows.js';
 
 test('catalog has the seed fellows', () => {
   assert.equal(FELLOW_IDS.length, 7);
@@ -10,11 +19,24 @@ test('catalog has the seed fellows', () => {
   assert.equal(isFellowId('coder'), false);
 });
 
+test('learner language catalog covers Persian, Sorani, and European defaults', () => {
+  assert.ok(LEARNER_LANGUAGES.includes('Persian'));
+  assert.ok(LEARNER_LANGUAGES.includes('Central Kurdish (Sorani)'));
+  assert.ok(LEARNER_LANGUAGES.includes('English'));
+  assert.ok(LEARNER_LANGUAGES.includes('German'));
+  assert.ok(LEARNER_LANGUAGES.includes('French'));
+  assert.equal(resolveLearnerLanguage('farsi', 'English'), 'Persian');
+  assert.equal(resolveLearnerLanguage('sorani', 'English'), 'Central Kurdish (Sorani)');
+  assert.equal(resolveLearnerLanguage('Deutsch', 'English'), 'German');
+  assert.equal(resolveLearnerLanguage('nope', 'French'), 'French');
+});
+
 test('sanitizeLearner fills defaults and clamps', () => {
   assert.deepEqual(sanitizeLearner(null), DEFAULT_LEARNER);
   assert.equal(sanitizeLearner({ level: 'growing' }).level, 'growing');
   assert.equal(sanitizeLearner({ level: 'nope' as 'newbie' }).level, 'newbie');
   assert.equal(sanitizeLearner({ nativeLanguage: '  Persian  ' }).nativeLanguage, 'Persian');
+  assert.equal(sanitizeLearner({ targetLanguage: 'ckb' }).targetLanguage, 'Central Kurdish (Sorani)');
 });
 
 test('fellowBrief names the fellow, languages, and scene', () => {
