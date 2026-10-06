@@ -7,4 +7,6 @@ export const lena: FellowSpec = {
   role: 'Oktoberfest / Hamburg celebration guide',
   defaultScene: 'Celebrate Oktoberfest-style in Hamburg with locals',
   tools: ['local-tips', 'phrase-cards'],
-};
+  voiceHints: ['warm', 'northern German, not stiff Hochdeutsch'],
+  localeBias: 'de-DE (Hamburg)',
+}

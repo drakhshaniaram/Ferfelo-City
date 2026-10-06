@@ -22,6 +22,7 @@ export interface ChartsDeps {
 
 export function installCharts(ctx: Ctx, deps: ChartsDeps) {
   function show() {
+    ctx.sound.chartsOpen();
     const city = store.sky?.city?.trim() || 'your sky city (set Outside in Settings)';
     const pack = chartPackForCity(store.sky?.city);
     openCharts({

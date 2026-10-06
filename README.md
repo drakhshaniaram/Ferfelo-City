@@ -6,7 +6,7 @@ Sit cultural-context fellows at desks — Oktoberfest guides, cooking coaches, i
 
 Forked from [AgentSystemLabs/agent-office](https://github.com/AgentSystemLabs/agent-office): the building, terminals, and agent CLIs remain; desks hire **language fellows** instead of coding workers by default.
 
-[**Run locally**](#run-locally) · [**Language fellows**](docs/language-fellows.md) · [**Features**](docs/features.md) · [**How it works**](docs/how-it-works.md)
+[**Run locally**](#run-locally) · [**Language fellows**](docs/language-fellows.md) · [**Staff / coding office**](docs/features.md) · [**How it works**](docs/how-it-works.md)
 
 ---
 

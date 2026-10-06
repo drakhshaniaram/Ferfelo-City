@@ -27,6 +27,8 @@ import { bark, yip } from '../features/dog/sound';
 import { airlock, cellDoor, thud } from '../features/workers/sound';
 import { golf, type GolfSound } from '../features/golf/sound';
 import { gong } from '../features/gong/sound';
+import { chartsOpen } from '../features/charts/sound';
+import { karaokeMic } from '../features/karaoke/sound';
 import { Jukebox, type JukeboxPlay } from '../features/jukebox/sound';
 import { needsYou } from '../features/needsyou/sound';
 import type { Pos } from './places';
@@ -282,6 +284,14 @@ export class OfficeSound {
 
   horn() {
     this.dj.horn();
+  }
+
+  karaokeMic() {
+    karaokeMic(this.a);
+  }
+
+  chartsOpen() {
+    chartsOpen(this.a);
   }
 
   pour(at: Pos) {

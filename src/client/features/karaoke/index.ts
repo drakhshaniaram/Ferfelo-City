@@ -19,6 +19,7 @@ export interface KaraokeDeps {
 
 export function installKaraoke(ctx: Ctx, deps: KaraokeDeps) {
   function show() {
+    ctx.sound.karaokeMic();
     openKaraoke();
   }
 

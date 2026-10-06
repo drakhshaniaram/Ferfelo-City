@@ -12,8 +12,11 @@ export interface FellowSpec {
   defaultScene: string;
   /** Scene tools this fellow may use (product stubs for now; the brief names them). */
   tools: string[];
+  /** Optional spoken-style hints for briefs / TTS later. */
+  voiceHints?: string[];
+  /** Optional locale / dialect bias for scene copy. */
+  localeBias?: string;
 }
-
 export interface LearnerProfile {
   nativeLanguage: string;
   targetLanguage: string;
