@@ -55,8 +55,13 @@ export function interactive(): boolean {
 /**
  * The office starting in a terminal with no floors yet: walk through the workspace folder, GitHub
  * sign-in and the first projects before it opens. Enter skips any of it; the elevator does the same.
+ * Academy skips this — openFloors makes a Ferfelo Campus floor instead.
  */
 export async function welcome(cfg: Config): Promise<void> {
+  if (cfg.mode === 'academy') {
+    console.log('\n  🎓 Ferfelo Academy — opening campus (no GitHub project needed)…\n');
+    return;
+  }
   const building = new Building(cfg.dataDir, cfg.projectsDir, { terminal: true });
   if (building.list().length) return;
   // --projects is the answer to the first question (the office applies it again as it starts).

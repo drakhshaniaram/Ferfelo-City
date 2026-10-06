@@ -1,6 +1,7 @@
 import './elevator.css';
 import type { CloneProgress, FloorInfo, RepoChoice, ServerMsg } from '../../shared/protocol';
 import { cloneLabel, cloneStep, floorPalette, normalizeRepo, sameRepo } from '../../shared/floors';
+import { isAcademyMode } from '../../shared/mode';
 import { ROOF, ROOF_NAME } from '../../shared/rooftop';
 import type { Net } from '../net';
 import { store } from '../state';
@@ -11,6 +12,7 @@ import { confirmDialog } from './prompt';
 // one of the repositories the office's gh login can see and makes it a new floor. The first time
 // the office runs there are no floors, and this is where you start. Admins can take a floor off the
 // building here too; its checkout stays on disk. Under the floors, it goes down to the garage.
+// Academy opens a campus floor instead of the GitHub first-project wall.
 
 /**
  * The garage under the building, where the elevator goes too. It isn't a floor: it's down under the
@@ -62,6 +64,7 @@ export function openElevator(opts: ElevatorOptions): void {
   // Nowhere to go yet: the panel greets you. It closes like any other; the elevator (or the floor
   // name in the corner) opens it again.
   const setup = !store.floor;
+  const academy = isAcademyMode(store.mode);
   const { net } = opts;
   let filter = '';
   let selected: string | null = null;
@@ -70,7 +73,8 @@ export function openElevator(opts: ElevatorOptions): void {
   let seen = false;
   let startTimer: number | undefined;
   let error = '';
-  let showAdd = setup || !store.floors.length;
+  // Academy never opens as a GitHub first-project wall; coding office still does when empty.
+  let showAdd = !academy && (setup || !store.floors.length);
   /** The search box and list are in place (rebuilding them would lose the focus mid-typing). */
   let built = false;
 
@@ -256,7 +260,7 @@ export function openElevator(opts: ElevatorOptions): void {
 
   const renderAdd = () => {
     if (!showAdd) {
-      const open = h('button.btn', { type: 'button' }, '➕ Add a project');
+      const open = h('button.btn', { type: 'button' }, academy ? 'Staff: add a coding floor' : '➕ Add a project');
       open.addEventListener('click', () => {
         showAdd = true;
         needRepos();
@@ -300,7 +304,7 @@ export function openElevator(opts: ElevatorOptions): void {
     if (!built) {
       built = true;
       addEl.replaceChildren(
-        h('h3', {}, setup && !store.floors.length ? 'Pick your first project' : '➕ Add a project'),
+        h('h3', {}, setup && !store.floors.length && !academy ? 'Pick your first project' : '➕ Add a project'),
         h('div.repo-search', {}, input, refreshBtn),
         listEl,
         statusEl,
@@ -388,17 +392,22 @@ export function openElevator(opts: ElevatorOptions): void {
     ? h(
         'p.intro',
         {},
-        store.floors.length
-          ? 'Every project is a floor of this building. Pick a floor to ride to, or add another project.'
-          : "Every project is a floor of this building, and it doesn't have any yet. Pick one of your repositories: the office clones it and it becomes the first floor.",
+        academy
+          ? store.floors.length
+            ? 'Pick a campus floor to ride to. Coding floors stay under Staff: add a coding floor.'
+            : 'Ferfelo Academy opens a campus for you — Esc to look around, or wait for the campus floor.'
+          : store.floors.length
+            ? 'Every project is a floor of this building. Pick a floor to ride to, or add another project.'
+            : "Every project is a floor of this building, and it doesn't have any yet. Pick one of your repositories: the office clones it and it becomes the first floor.",
       )
     : null;
+  const welcomeTitle = academy ? '🎓 Welcome to Ferfelo Academy' : '🏢 Welcome to Agent Office';
   const el = h(
     'div.modal.elevator',
     { role: 'dialog', 'aria-label': 'Elevator' },
-    h('header', {}, h('h2', {}, setup ? '🏢 Welcome to Agent Office' : '🛗 Elevator'), close),
+    h('header', {}, h('h2', {}, setup ? welcomeTitle : '🛗 Elevator'), close),
     h('div.body', {}, intro, floorsEl, addEl),
-    h('footer', {}, h('span.grow', {}, setup ? 'Your office, one floor per project · Esc to look around first' : 'Pick a floor · Esc to stay here'), addBtn),
+    h('footer', {}, h('span.grow', {}, setup ? (academy ? 'Ferfelo Academy · Esc to look around' : 'Your office, one floor per project · Esc to look around first') : 'Pick a floor · Esc to stay here'), addBtn),
   );
   const unsubs = [store.on('floors', () => (checkAdding(), renderFloors(), renderAdd())), store.on('repos', renderAdd), store.on('projectsDir', () => (editDir(false), renderAdd())), store.on('floor', renderFloors), store.on('peers', renderFloors), store.on('me', () => (renderFloors(), renderAdd()))];
   const modal = openModal(el, {

@@ -5,6 +5,7 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { Building, type FloorDef } from '../src/server/building.js';
+import { ensureCampus } from '../src/server/campus.js';
 
 function office(t: { after(fn: () => void): void }) {
   const root = mkdtempSync(path.join(tmpdir(), 'agent-office-building-'));
@@ -82,4 +83,21 @@ test('the floor the office was started in comes off too, stays off after a resta
   const third = new Building(dataDir, root);
   assert.equal(third.ensureLocal(defs[0].dir, 'the office')?.id, 'api');
   assert.deepEqual(third.list().map((d) => d.id), ['web', 'docs', 'api']);
+});
+
+test('academy ensureCampus makes one floor and is a no-op once anything is there', (t) => {
+  const root = mkdtempSync(path.join(tmpdir(), 'agent-office-campus-'));
+  t.after(() => rmSync(root, { recursive: true, force: true }));
+  const dataDir = path.join(root, '.agent-office');
+  mkdirSync(dataDir);
+  const building = new Building(dataDir, root);
+  const first = ensureCampus(building, 'the academy');
+  assert.ok(first);
+  assert.equal(first!.name, 'Ferfelo Campus');
+  assert.equal(first!.repo, undefined);
+  assert.ok(existsSync(path.join(first!.dir, 'README.md')));
+  assert.deepEqual(building.list().map((d) => d.id), [first!.id]);
+  assert.equal(ensureCampus(building, 'again')?.id, first!.id);
+  assert.equal(building.list().length, 1);
+  assert.deepEqual(saved(dataDir), [first!.id]);
 });

@@ -7,6 +7,7 @@
  */
 import { OFFICE_PLAN } from '../../shared/maps';
 import { SLAB, inElevator } from '../../shared/layout';
+import { isAcademyMode } from '../../shared/mode';
 import { ROOF, ROOF_NAME } from '../../shared/rooftop';
 import { renderTitle } from '../shared/title';
 import { lastFloor, lastSpot, store, type Spot } from '../state';
@@ -156,7 +157,14 @@ export function installArrival(ctx: Ctx, core: CoreState, parts: ArrivalParts) {
     // Someone who just joined starts here: their workers need their own Claude sign-in first.
     if (!signInsGreeted) {
       signInsGreeted = true;
-      if (needsSigningIn()) openSignIns(net, 'Welcome! Sign in to Claude so the workers you hire run on your own plan, and to GitHub so what you do on the boards is yours.');
+      if (needsSigningIn()) {
+        openSignIns(
+          net,
+          isAcademyMode(store.mode)
+            ? 'Welcome to Ferfelo Academy! Sign in to Claude so language fellows run on your own plan.'
+            : 'Welcome! Sign in to Claude so the workers you hire run on your own plan, and to GitHub so what you do on the boards is yours.',
+        );
+      }
     }
   });
   ctx.messages.on('signins.needed', (msg) => openSignIns(net, msg.why));
@@ -186,11 +194,16 @@ export function installArrival(ctx: Ctx, core: CoreState, parts: ArrivalParts) {
       return;
     }
     if (!p) {
-      $('project-name').textContent = '🏢 Agent Office';
-      $('project-meta').textContent = store.floors.length ? '🛗 Take the elevator to a floor' : '🛗 No floors yet — add a project in the elevator';
+      const academy = isAcademyMode(store.mode);
+      $('project-name').textContent = academy ? '🎓 Ferfelo Academy' : '🏢 Agent Office';
+      $('project-meta').textContent = store.floors.length
+        ? '🛗 Take the elevator to a floor'
+        : academy
+          ? '🎓 Opening campus…'
+          : '🛗 No floors yet — add a project in the elevator';
       // Where to go next, so it shows even with the floor details turned off.
       $('project-meta').classList.add('lobby');
-      ctx.world().setProjectName(store.floors.length ? 'Pick a floor' : 'Lobby');
+      ctx.world().setProjectName(store.floors.length ? 'Pick a floor' : academy ? 'Campus' : 'Lobby');
       return;
     }
     const n = store.floors.findIndex((f) => f.id === store.floor);
@@ -201,6 +214,7 @@ export function installArrival(ctx: Ctx, core: CoreState, parts: ArrivalParts) {
   }
   store.on('floors', renderProject);
   store.on('project', renderProject);
+  store.on('mode', renderProject);
 
   /** Where to put you back when the office lets you in: where you are now, or before this page was loaded, where you were last time. */
   function whereNow(): Spot | null {

@@ -230,8 +230,8 @@ export class Building {
 
   /**
    * Makes the checkout the office was started in a floor, if it isn't one yet: `agent-office <dir>`
-   * has always meant that project. Once someone takes it off the building it stays off (the office
-   * still keeps its own data in it), until its repository is added again from the elevator.
+   * has always meant that project. Once someone takes it off the building it stays off until its
+   * repository is added again from the elevator.
    */
   ensureLocal(dir: string, by: string): FloorDef | undefined {
     const abs = path.resolve(dir);
@@ -247,6 +247,14 @@ export class Building {
     const def = this.newDef(path.basename(abs), this.local.repo, abs, by);
     this.defs.unshift(def);
     this.localId = def.id;
+    this.save();
+    return def;
+  }
+
+  /** Adds a no-repo floor from an already-on-disk folder (Academy campus). */
+  seedFloor(name: string, dir: string, by: string): FloorDef {
+    const def = this.newDef(name, undefined, path.resolve(dir), by);
+    this.defs.unshift(def);
     this.save();
     return def;
   }

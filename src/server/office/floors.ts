@@ -1,7 +1,9 @@
 import { existsSync } from 'node:fs';
 import { WebSocket } from 'ws';
 import type { FloorDef } from '../building.js';
+import { ensureCampus } from '../campus.js';
 import { Floor, type FloorContext } from '../floor.js';
+import { isAcademyMode } from '../../shared/mode.js';
 import { ROOF } from '../../shared/rooftop.js';
 import type { FloorInfo, ServerMsg } from '../../shared/protocol.js';
 import type { Ctx, FloorHelpers, FloorsOpen } from './context.js';
@@ -138,6 +140,11 @@ export async function openFloors(ctx: Ctx, hookPort: number): Promise<FloorsOpen
   };
   // Started in a project: it's a floor too (the one it has always been).
   if (cfg.project) ctx.building.ensureLocal(cfg.project, 'the office');
+  // Academy with nothing yet: open Ferfelo Campus so the elevator never asks for a GitHub project.
+  else if (isAcademyMode(ctx.officeMode.mode) && !ctx.building.list().length) {
+    const campus = ensureCampus(ctx.building, 'the academy');
+    if (campus) console.log(`  academy campus floor ready (${campus.dir})`);
+  }
   for (const def of ctx.building.list()) openFloor(def);
   // Clones keep the elevator's progress up to date, and ones the last office left running carry on.
   ctx.building.watchClones(ctx.floorsChanged);

@@ -91,15 +91,15 @@ irm https://raw.githubusercontent.com/AgentSystemLabs/agent-office/main/install.
 
 This puts an `agent-office` command on your PATH, so next time just run `agent-office`. Run the install line again to update. The installer's settings (a particular release, install without starting) are listed at the top of [`install.sh`](install.sh) and [`install.ps1`](install.ps1).
 
-The first time it starts, it walks you through setting up, right in the terminal:
+The first time it starts in **Academy** mode (the default on this fork), it opens a **Ferfelo Campus** floor — no GitHub project required. Switch to coding office mode (or run with `--mode coding`) for the classic walkthrough:
 
 1. **Where to clone your projects.** It suggests a code folder you already have (`~/Workspace`, `~/code`…), else `~/agent-office`. Each project goes in `<folder>/<owner>/<repo>`.
 2. **GitHub.** If the GitHub CLI isn't signed in, it offers to run `gh auth login` for you.
 3. **Your first project.** Pick one of your repos by number, or type `owner/name`, and the office clones it as the first floor.
 
-Press Enter to skip a step: the elevator in the office asks for your first project too. Then the office opens in your browser, **already signed in**, with a link that works once. The terminal also prints the office password, for signing in from another browser (it's saved in `~/agent-office/.agent-office/config.json`).
+Press Enter to skip a coding-mode step: the elevator in the office asks for your first project too. Then the office opens in your browser, **already signed in**, with a link that works once. The terminal also prints the office password, for signing in from another browser (it's saved in `~/agent-office/.agent-office/config.json`).
 
-Walk to an empty desk, press **E** and hire a worker.
+Walk to an empty desk, press **E** and invite a language fellow.
 
 Common options:
 
