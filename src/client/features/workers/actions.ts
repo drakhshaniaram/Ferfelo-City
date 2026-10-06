@@ -10,6 +10,7 @@ import { officeFull, pressureNote } from '../../../shared/machine';
 import type { AgentEffort, AgentProvider, WorkerInfo } from '../../../shared/protocol';
 import type { FellowId } from '../../../shared/fellows';
 import { fellowBrief } from '../../../shared/fellows';
+import { isAcademyMode } from '../../../shared/mode';
 import { isAsleep, isBusy } from '../../../shared/status';
 import type { Ctx, Hint } from '../../core/context';
 import type { CoreState } from '../../core/ctx';
@@ -99,6 +100,8 @@ export function installWorkerActions(ctx: Ctx, core: CoreState, parts: WorkerAct
     const w = store.workerAtDesk(deskId);
     const desk = plan().byId.get(deskId)!;
     if (!w) {
+      // Academy: empty-desk P is fellow invite, not a coding task hire.
+      if (isAcademyMode(store.mode)) return hireAtDesk(deskId);
       if (officeIsFull()) return;
       openPrompt({
         title: `✨ New task at ${desk.label}`,
@@ -371,8 +374,11 @@ export function installWorkerActions(ctx: Ctx, core: CoreState, parts: WorkerAct
             ? [h('span.cost', {}, `🚫 Office full · ${m.workers} of ${m.limit} workers`)]
             : [
                 m.pressure ? h('span.cost', { title: `This machine is under pressure: ${m.pressure}` }, '⚠️ Machine under pressure') : '',
-                ...(paused ? [h('span.cost', {}, '💸 Budget spent — hiring resumes tomorrow')] : [key('E', 'Invite a fellow'), key('P', 'Hire with a task')]),
-                key('B', 'Shell'),
+                ...(paused
+                  ? [h('span.cost', {}, '💸 Budget spent — hiring resumes tomorrow')]
+                  : isAcademyMode(store.mode)
+                    ? [key('E', 'Invite a fellow')]
+                    : [key('E', 'Invite a fellow'), key('P', 'Hire with a task'), key('B', 'Shell')]),
               ]),
           labelKey,
         ],
@@ -471,7 +477,10 @@ export function installWorkerActions(ctx: Ctx, core: CoreState, parts: WorkerAct
       const w = store.workerAtDesk(it.deskId);
       // Nobody is hired at the meeting table: a meeting seats its own workers there.
       if (!w && plan().byId.get(it.deskId)?.room) return key === 'E' ? parts.meeting.showMeeting() : undefined;
-      if (key === 'B' && !w) return openShell(it.deskId);
+      if (key === 'B' && !w) {
+        if (isAcademyMode(store.mode)) return toast('Shell hire is in coding office mode (⚙️ Settings → Building)', 'info');
+        return openShell(it.deskId);
+      }
       if (key === 'P') return promptAtDesk(it.deskId);
       if (key === 'E') return w ? (w.fellowId ? openFellow(w.id) : openWorkerTerminal(w.id)) : hireAtDesk(it.deskId);
       if (key === 'C' && w) return openWorkerChanges(w.id);

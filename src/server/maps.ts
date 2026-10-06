@@ -25,8 +25,11 @@ export class Maps {
   private custom: CustomMap[] = [];
   /** What the folder looked like when it was last read: each file's name, size and mtime. */
   private stamp = '';
+  /** Used when nothing is saved yet (academy deploys pass `city`). */
+  private readonly fallback: string;
 
-  constructor(dataDir: string) {
+  constructor(dataDir: string, fallback: string = OFFICE_MAP) {
+    this.fallback = fallback;
     this.file = path.join(dataDir, 'map.json');
     this.dir = path.join(dataDir, 'maps');
     this.restore();
@@ -47,7 +50,8 @@ export class Maps {
   /** The map everyone's on: the one picked, while it's there to be had. */
   pick(): string {
     const p = this.saved?.pick;
-    return p && isMapChoice(p, this.custom) ? p : OFFICE_MAP;
+    if (p && isMapChoice(p, this.custom)) return p;
+    return isMapChoice(this.fallback, this.custom) ? this.fallback : OFFICE_MAP;
   }
 
   /** Where everything is on the building's map. */

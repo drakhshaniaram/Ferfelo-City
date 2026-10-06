@@ -15,7 +15,7 @@ The fellow sits down under their catalog name (Lena, Marco, …) with a brief th
 
 ## Mode
 
-The building runs as **Academy** by default (`AGENT_OFFICE_MODE=academy` or `--mode academy`). Admins can switch to **Coding office** in **⚙️ Settings → Building → Mode** to surface GitHub boards in the main menu again. In Academy mode those boards sit under Staff tools.
+The building runs as **Academy** by default (`AGENT_OFFICE_MODE=academy` or `--mode academy`), with **Ferfelo City** as the default map until someone picks another in Settings. Admins can switch to **Coding office** in **⚙️ Settings → Building → Mode** to surface GitHub boards in the main menu again. In Academy mode those boards sit under Staff tools; empty-desk **P** invites a fellow instead of a coding task hire.
 
 ## Chat
 

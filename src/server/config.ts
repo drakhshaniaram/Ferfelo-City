@@ -152,6 +152,9 @@ Options:
       --webhook <url>     Post to this Slack or Discord webhook when a worker
                           needs input or finishes (env AGENT_OFFICE_WEBHOOK).
                           Also settable from ⚙️ Settings in the office; "" turns it off
+      --mode <name>       Building skin: academy (default) or coding
+                          (env AGENT_OFFICE_MODE). Academy invites language
+                          fellows; coding restores the GitHub office boards.
       --city <name>       Put the office in a real city, e.g. "Berlin" or
                           "Portland, Oregon" (env AGENT_OFFICE_CITY): the sun
                           keeps its hours of daylight and the weather outside

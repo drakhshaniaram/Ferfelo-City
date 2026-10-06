@@ -7,7 +7,7 @@ import type { ThemePick, WebhookKind } from '../../shared/protocol';
 import { THEME_PICKS } from '../../shared/theme';
 import { mapChoices } from '../../shared/maps';
 import { dogSetting } from './settings-dog';
-import { h, openModal, timeAgo } from './dom';
+import { h, openModal, timeAgo, toast } from './dom';
 import { agentFields, choiceLabel, officeChoice } from './provider';
 import { openPromptEditor, rewrittenPrompts } from './prompts';
 import { outsideSetting } from './settings-sky';
@@ -449,6 +449,7 @@ export function openSettings(net: Net, settings: Settings, onChange: (s: Setting
   const learnerBox = learnerFields(loadLearner(), (next) => {
     saveLearner(next);
     learnerNote.textContent = 'Saved. Re-invite a fellow at a desk so their brief picks up the new languages and level.';
+    toast('Learner saved. Fellows already at desks keep their old brief until you re-invite them.', 'info');
   });
   const modeRow = h('div.seg', { role: 'radiogroup', 'aria-label': 'Building mode' });
   const modeNote = h('p.setting-note');

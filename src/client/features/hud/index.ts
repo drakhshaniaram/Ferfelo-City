@@ -56,6 +56,8 @@ export function installHud(ctx: Ctx, core: CoreState, parts: HudParts) {
       { id: 'services', icon: '🌐', label: 'Services', section: 'Open', shown: () => !isAcademyMode(store.mode), count: () => store.services.items.length, title: () => 'Web servers the workers are running', run: () => openServices() },
       { id: 'staff-issues', icon: '📌', label: 'Staff: Issues', section: 'Office', shown: () => isAcademyMode(store.mode), count: () => store.issues.items.filter((i) => i.state === 'OPEN').length, title: () => 'Coding boards (staff)', run: () => openBoard('issues', net, actions.boardActions()) },
       { id: 'staff-pulls', icon: '🔀', label: 'Staff: Pull requests', section: 'Office', shown: () => isAcademyMode(store.mode), count: () => store.pulls.items.filter((p) => p.state === 'OPEN').length, title: () => 'Coding boards (staff)', run: () => openBoard('pulls', net, actions.boardActions()) },
+      { id: 'staff-queue', icon: '📋', label: 'Staff: Task queue', section: 'Office', shown: () => isAcademyMode(store.mode), count: () => store.queue.tasks.filter((t) => t.status !== 'done').length, title: () => 'Coding queue (staff)', run: waiting.showQueue },
+      { id: 'staff-services', icon: '🌐', label: 'Staff: Services', section: 'Office', shown: () => isAcademyMode(store.mode), count: () => store.services.items.length, title: () => 'Coding services (staff)', run: () => openServices() },
       { id: 'whiteboard', icon: '📝', label: 'Whiteboard', section: 'Open', title: () => 'Draw together, live', run: () => openWhiteboard(net) },
       // Up on the top bar while a meeting is on: what's being worked through in the meeting room.
       {
