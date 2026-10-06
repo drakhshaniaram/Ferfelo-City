@@ -5,16 +5,18 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { Building } from '../src/server/building.js';
 import { addCityFloor } from '../src/server/city-floors.js';
-import { CITY_CATALOG, CITY_IDS, cityOf } from '../src/shared/cities.js';
+import { CITY_IDS, cityOf } from '../src/shared/cities.js';
 
-test('city catalog has Amsterdam (Dutch) and Hamburg (German) with unique vibes', () => {
+test('city catalog has distinct cartoon looks per city', () => {
   assert.equal(cityOf('amsterdam')?.targetLanguage, 'Dutch');
   assert.equal(cityOf('hamburg')?.targetLanguage, 'German');
   assert.ok(CITY_IDS.includes('amsterdam'));
-  assert.ok(CITY_CATALOG.amsterdam.pictures.length >= 2);
+  assert.ok(cityOf('amsterdam')?.look.pattern === 'tiles');
+  assert.ok(cityOf('hamburg')?.look.pattern === 'bricks');
+  assert.ok(cityOf('paris')?.look.pattern === 'checkers');
+  assert.notEqual(cityOf('amsterdam')?.look.wall, cityOf('hamburg')?.look.wall);
   assert.ok(cityOf('amsterdam')?.mood.includes('Canal'));
   assert.ok(cityOf('paris')?.welcome.toLowerCase().includes('paris'));
-  assert.notEqual(cityOf('amsterdam')?.palette, cityOf('hamburg')?.palette);
 });
 
 test('addCityFloor seeds Amsterdam under projects/cities and refuses duplicates', (t) => {

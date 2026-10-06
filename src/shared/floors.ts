@@ -15,6 +15,8 @@ export interface FloorPalette {
   floorAlt: string;
   /** The gaps between planks. */
   seam: string;
+  /** Cartoon floor pattern (city floors); defaults to wood planks. */
+  pattern?: 'planks' | 'tiles' | 'bricks' | 'checkers';
 }
 
 /** The first is the office as it always looked; every new floor takes the next one nobody has. */

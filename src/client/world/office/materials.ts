@@ -94,11 +94,55 @@ export function onWall(side: Side, u: number): { x: number; z: number; rotY: num
   }
 }
 
-/** Chunky planks in a floor's colors. */
+/** Chunky floor boards — or cartoon tiles / bricks / checkers when a city floor asks for them. */
 export function paintPlanks(c: HTMLCanvasElement, p: FloorPalette) {
   const g = c.getContext('2d')!;
+  const pattern = p.pattern ?? 'planks';
   g.fillStyle = p.floor;
   g.fillRect(0, 0, 512, 512);
+  if (pattern === 'tiles') {
+    const n = 8;
+    const s = 512 / n;
+    for (let row = 0; row < n; row++) {
+      for (let col = 0; col < n; col++) {
+        g.fillStyle = (row + col) % 2 ? p.floorAlt : p.floor;
+        g.fillRect(col * s + 2, row * s + 2, s - 4, s - 4);
+        g.strokeStyle = p.seam;
+        g.lineWidth = 3;
+        g.strokeRect(col * s + 1, row * s + 1, s - 2, s - 2);
+      }
+    }
+    return;
+  }
+  if (pattern === 'bricks') {
+    const rows = 10;
+    const h = 512 / rows;
+    for (let row = 0; row < rows; row++) {
+      const offset = (row % 2) * 64;
+      for (let col = -1; col < 5; col++) {
+        const x = col * 128 + offset;
+        g.fillStyle = (row + col) % 2 ? p.floorAlt : p.floor;
+        g.fillRect(x + 2, row * h + 2, 124, h - 4);
+      }
+      g.fillStyle = p.seam;
+      g.fillRect(0, row * h, 512, 3);
+    }
+    return;
+  }
+  if (pattern === 'checkers') {
+    const n = 6;
+    const s = 512 / n;
+    for (let row = 0; row < n; row++) {
+      for (let col = 0; col < n; col++) {
+        g.fillStyle = (row + col) % 2 ? p.floorAlt : p.floor;
+        g.fillRect(col * s, row * s, s, s);
+      }
+    }
+    g.strokeStyle = p.seam;
+    g.lineWidth = 4;
+    g.strokeRect(2, 2, 508, 508);
+    return;
+  }
   for (let row = 0; row < 8; row++) {
     const offset = (row % 2) * 128;
     for (let col = -1; col < 3; col++) {

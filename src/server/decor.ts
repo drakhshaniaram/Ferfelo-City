@@ -27,9 +27,11 @@ export class Decor {
     return d;
   }
 
-  /** Hang starter pictures when the walls are still bare (city floors). Returns how many hung. */
-  seedIfEmpty(placements: readonly unknown[], by: string): number {
-    if (this.items.length || !placements.length) return 0;
+  /** Replace academy-seeded pictures (or hang them on bare walls). Leaves user-hung art alone. */
+  refreshAcademySeed(placements: readonly unknown[], by: string): number {
+    const kept = this.items.filter((d) => d.by !== by);
+    const changed = kept.length !== this.items.length;
+    this.items = kept;
     let n = 0;
     for (const raw of placements) {
       if (this.items.length >= MAX_DECOR) break;
@@ -38,8 +40,14 @@ export class Decor {
       this.items.push({ ...p, id: randomBytes(5).toString('hex'), by, at: Date.now() });
       n++;
     }
-    if (n) this.save();
+    if (n || changed) this.save();
     return n;
+  }
+
+  /** Hang starter pictures when the walls are still bare (city floors). Returns how many hung. */
+  seedIfEmpty(placements: readonly unknown[], by: string): number {
+    if (this.items.length || !placements.length) return 0;
+    return this.refreshAcademySeed(placements, by);
   }
 
   /** Changes any part of a picture's placement; what the patch leaves out stays as it was. */

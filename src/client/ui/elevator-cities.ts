@@ -67,7 +67,7 @@ export function mountCityAdd(opts: {
     });
     const kids: (HTMLElement | string)[] = [
       h('h3', {}, '🌆 Add a city'),
-      h('p.note', {}, 'City floors hang themed pictures from the web and set the practice language (Amsterdam → Dutch, Hamburg → German). Fellows on that floor speak it by default.'),
+      h('p.note', {}, 'Each city gets its own cartoon look — walls, floor pattern, and wall props (canal houses, harbor brick, café awnings…). Fellows there speak that language by default.'),
       h('div.floors', {}, ...rows),
     ];
     if (error) kids.push(h('p.err', {}, error));

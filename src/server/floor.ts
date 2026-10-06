@@ -308,7 +308,8 @@ export class Floor {
 
     this.decor = new Decor(dataDir);
     const city = cityOf(def.cityId);
-    if (city) this.decor.seedIfEmpty(city.pictures, 'the academy');
+    // City floors: refresh academy murals/seed (clears old photo posters when the catalog moves to cartoon looks).
+    if (city) this.decor.refreshAcademySeed(city.pictures, 'the academy');
     this.jukebox = new Jukebox(dataDir);
     this.whiteboard = new Whiteboard(dataDir);
     this.ready = this.workers.start();

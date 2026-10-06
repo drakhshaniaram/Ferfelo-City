@@ -1,4 +1,5 @@
 import type { DecorPlacement } from '../decor.js';
+import type { FloorPalette } from '../floors.js';
 import type { LearnerLanguage } from '../fellows/languages.js';
 
 /** A curated city floor learners can add in Academy mode. */
@@ -15,11 +16,13 @@ export interface CityDef {
   targetLanguage: LearnerLanguage;
   /** Sky / charts match string (e.g. "Amsterdam, Netherlands"). */
   skyCity: string;
-  /** Preferred FLOOR_PALETTES index when free. */
+  /** Preferred FLOOR_PALETTES index for elevator chips when free. */
   palette: number;
+  /** Cartoon office paint: walls, trim, floor pattern. */
+  look: FloorPalette;
   /** Emoji for the elevator list. */
   icon: string;
-  /** Starter wall pictures (Wikimedia / public web images). */
+  /** Starter wall pictures (optional; city floors also get 3D murals). */
   pictures: DecorPlacement[];
 }
 

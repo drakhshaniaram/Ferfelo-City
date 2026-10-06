@@ -6,6 +6,7 @@
  * Academy halls (Ferfelo City, castle, ship) have no tower roof. Riding to the rooftop bar temporarily
  * borrows the office tower without changing the saved map pick; leaving the roof restores it.
  */
+import { cityOf } from '../../shared/cities';
 import { floorPalette } from '../../shared/floors';
 import { OFFICE_PLAN, type MapPlan } from '../../shared/maps';
 import { ROOF } from '../../shared/rooftop';
@@ -32,10 +33,11 @@ export function installMaps(ctx: Ctx, core: CoreState, parts: MapsParts) {
   let painted = '';
   function paintFloor() {
     const f = store.currentFloor();
-    const key = f ? `${f.id}:${f.palette}` : `:${0}`;
+    const key = f ? `${f.id}:${f.palette}:${f.cityId ?? ''}` : `:${0}`;
     if (key === painted) return;
     painted = key;
-    ctx.world().setLook(floorPalette(f?.palette ?? 0));
+    const city = cityOf(f?.cityId);
+    ctx.world().setLook(city?.look ?? floorPalette(f?.palette ?? 0));
   }
   // A brand-new floor can arrive before the elevator's list says what color it is.
   store.on('floors', paintFloor);
