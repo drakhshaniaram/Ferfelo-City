@@ -33,8 +33,12 @@ export function createServices(ctx: Ctx): BuildingServices {
   // goes by the calendar at the office, the sky's clock.
   const themes = new Themes(cfg.dataDir, () => sky.state.utcOffset, (state) => ctx.broadcast({ t: 'theme', state }));
   themes.start();
-  // What the building looks like inside: Ferfelo City by default in Academy, else the office.
-  const maps = new Maps(cfg.dataDir, cfg.mode === 'academy' ? 'city' : OFFICE_MAP);
+  // Academy: office tower so each city floor paints uniquely and the rooftop lounge is there.
+  // Ferfelo City / Castle / Ship stay available under ⚙️ Settings → Building → Map.
+  const maps = new Maps(cfg.dataDir, OFFICE_MAP);
+  // Older academy installs defaulted to Ferfelo City (no tower roof). Move them onto the office tower
+  // so city floors get their own paint and the international lounge works. Halls remain pickable.
+  if (cfg.mode === 'academy' && maps.pick() === 'city') maps.set(OFFICE_MAP, 'academy');
   // The prompts the office writes for workers by itself, and the worker everyone starts on (⚙️ Settings).
   const configured = configuredProvider(cfg.agentCmd);
   const prompts = new OfficePrompts(cfg.dataDir, { list: agentProviders(configured), configured }, (state) => ctx.broadcast({ t: 'prompts', state }));

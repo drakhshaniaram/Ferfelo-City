@@ -116,17 +116,27 @@ export function installTravel(ctx: Ctx, core: CoreState, parts: TravelParts) {
    * bottom floor's.
    */
   function ride(to: string, keepWalking = false): void {
-    // A map of its own has no elevator: straight there, and no roof or garage to go to.
+    // A map of its own has no elevator shaft: straight to floors. The garage stays office-only.
+    // The rooftop bar lives on the office tower — borrow it without changing the saved map pick.
     if (!inOffice()) {
-      if (to === ROOF || to === GARAGE) {
+      if (to === GARAGE) {
         parts.walking.stopWalkingTo();
-        toast(`There's no ${to === ROOF ? 'rooftop bar' : 'garage'} on this map (${plan().icon} ${plan().name})`, 'warn');
+        toast(`There's no garage on this map (${plan().icon} ${plan().name})`, 'warn');
         return;
       }
-      // Still up on a roof this map doesn't have: straight down to that floor.
-      if (core.upTop) return leaveRoofFor(to);
-      // Straight there (and on over to whoever you were walking to, if that's why).
-      return switchFloor(to, keepWalking);
+      if (to === ROOF) {
+        if (!builtFloors().length) {
+          parts.walking.stopWalkingTo();
+          toast('Add a floor first — the rooftop sits above the building', 'warn');
+          return;
+        }
+        parts.maps.borrowOfficeForRoof();
+        // Fall through: inOffice() is true on the borrowed tower.
+      } else if (core.upTop) {
+        return leaveRoofFor(to);
+      } else {
+        return switchFloor(to, keepWalking);
+      }
     }
     const garage = to === GARAGE;
     const floorId = garage ? (core.upTop || !store.floor ? builtFloors()[0]?.id : store.floor) : to;
@@ -284,7 +294,11 @@ export function installTravel(ctx: Ctx, core: CoreState, parts: TravelParts) {
     camera.far = up ? 700 : FAR;
     camera.updateProjectionMatrix();
     // Drinks stay at the bar (what you've had comes down with you).
-    if (!up) parts.bar.booze.putDown();
+    if (!up) {
+      parts.bar.booze.putDown();
+      // Hall map was borrowed only for the roof: put it back now you're downstairs.
+      parts.maps.restoreAfterRoof();
+    }
     // Whatever was thrown up there while you were away, you didn't see: the boards start clean.
     if (up) parts.bargames.freshBoards(r!);
     const { hanger } = parts.hanging;

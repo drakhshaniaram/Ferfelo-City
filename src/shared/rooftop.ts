@@ -1,14 +1,14 @@
-// The rooftop bar: the roof of the building, over its top floor. Nobody works up there. There's a DJ
-// playing drum and bass under a rig of lights, a bar to drink at, and the city all around. The
-// elevator goes up there from every floor. Shared by the server (who's up there, what they're
-// holding) and the client (which builds it and plays the music).
+// The rooftop bar: international lounge over every floor. Fellows from every city gather here for
+// small talk, a beer by the fire, the club floor, and snacks. A DJ plays drum and bass under a rig of
+// lights. Shared by the server (who's up there, what they're holding) and the client (which builds it
+// and plays the music).
 
 /**
  * Where you are while you're on the roof (a peer's `floor`, and `floor.go`'s). It can never be a
  * project floor's id, which is only ever lowercase letters, digits and dashes.
  */
 export const ROOF = '@roof';
-export const ROOF_NAME = 'Rooftop bar';
+export const ROOF_NAME = 'Rooftop lounge';
 
 /** What a drink comes in: a pint, a wine glass, a martini glass, a tall glass or a shot glass. */
 export type Glass = 'pint' | 'wine' | 'martini' | 'highball' | 'shot';

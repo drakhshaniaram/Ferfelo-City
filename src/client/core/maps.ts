@@ -2,8 +2,13 @@
  * The building's map changing (the office, or a map of its own like the castle): the old world goes,
  * the new one's put up with everyone in their seats, and you come in where it has you arrive. Also
  * the floor's paint, down off a roof the map doesn't have, and who's waiting on another floor.
+ *
+ * Academy halls (Ferfelo City, castle, ship) have no tower roof. Riding to the rooftop bar temporarily
+ * borrows the office tower without changing the saved map pick; leaving the roof restores it.
  */
 import { floorPalette } from '../../shared/floors';
+import { OFFICE_PLAN, type MapPlan } from '../../shared/maps';
+import { ROOF } from '../../shared/rooftop';
 import { store } from '../state';
 import { $, toast } from '../ui/dom';
 import type { Ctx } from './context';
@@ -20,26 +25,29 @@ export function installMaps(ctx: Ctx, core: CoreState, parts: MapsParts) {
   const { holiday } = parts.stage;
   const { inOffice, plan } = parts.worlds;
 
-  /** Which of the floor palettes the walls are painted in now. */
-  let painted = -1;
+  /** Office tower is up only so the rooftop bar works; store.map stays on the hall the building picked. */
+  let borrowedForRoof = false;
+
+  /** Which floor paint is on the walls now (id + palette — city floors share indices). */
+  let painted = '';
   function paintFloor() {
-    const p = store.currentFloor()?.palette ?? 0;
-    if (p === painted) return;
-    painted = p;
-    ctx.world().setLook(floorPalette(p));
+    const f = store.currentFloor();
+    const key = f ? `${f.id}:${f.palette}` : `:${0}`;
+    if (key === painted) return;
+    painted = key;
+    ctx.world().setLook(floorPalette(f?.palette ?? 0));
   }
   // A brand-new floor can arrive before the elevator's list says what color it is.
   store.on('floors', paintFloor);
 
   /**
-   * The building changed maps (or you arrived and it's not the office): the old world goes, the new
-   * one's put up, every worker sits down in its seat there, and you come in where it has you arrive.
+   * Puts up `nextPlan`'s world. `settle` places you in the car when you're on a floor (skip while
+   * borrowing the tower mid-ride up to the roof).
    */
-  function applyMap() {
-    const { worlds, views, boards, travel } = parts;
-    const next = worlds.worldFor(store.plan());
-    if (next.world === worlds.world()) return;
-    // Everyone gets up from the old map's seats; they sit down in the new one's below.
+  function swapWorld(nextPlan: MapPlan, settle: boolean): boolean {
+    const { worlds, views, boards } = parts;
+    const next = worlds.worldFor(nextPlan);
+    if (next.world === worlds.world()) return false;
     for (const [id, v] of views.workerViews) {
       worlds.court()?.release(id);
       v.model.root.removeFromParent();
@@ -56,7 +64,6 @@ export function installMaps(ctx: Ctx, core: CoreState, parts: MapsParts) {
     ctx.activities.stopAll('map');
     parts.walking.stopWalkingTo();
     parts.smoking.stop();
-    // The office's things: the ball goes down (out of everyone's hands, since its sync is the office's), the games stop.
     if (parts.hoops.holding()) parts.hoops.dropBall();
     me.holdBall(false);
     hands.holdBall(false);
@@ -68,43 +75,67 @@ export function installMaps(ctx: Ctx, core: CoreState, parts: MapsParts) {
     const world = worlds.world();
     world.group.visible = !core.upTop;
     if (!core.upTop) player.colliders = world.colliders;
-    player.room = { ...plan().bounds, ...world.room };
+    player.room = { ...nextPlan.bounds, ...world.room };
     if (!core.upTop && !inOffice()) player.street = streetOf(world);
     sky.setIndoors(world.room.enclosed);
-    // What you hear: the office's fridge, or the hall's own windows and gong.
-    sound.setHall(world.acoustics ? { bounds: plan().bounds, ...world.acoustics } : null);
-    // The office's own: the holiday decorations round it and the street, the dog, the jukebox.
+    sound.setHall(world.acoustics ? { bounds: nextPlan.bounds, ...world.acoustics } : null);
     holiday.group.visible = inOffice() && !core.upTop;
     parts.dog.root.visible = inOffice() && !!store.dog;
     parts.jukebox.playJukebox();
     boards.dressBoards(world);
-    painted = -1;
+    painted = '';
     paintFloor();
     parts.arrival.renderProject();
     views.dressUp();
     views.syncPlan();
-    // They were there already: nobody walks in (and on a welcome, the floor's workers that come next weren't either).
     views.syncWorkersSeated();
     views.syncJail();
-    // The boards name seats the way this map does.
     boards.renderPullsBoard();
     boards.renderServicesBoard();
     boards.renderQueueBoard();
-    if (store.floor && !core.upTop && !core.trip) {
+    if (settle && store.floor && !core.upTop && !core.trip) {
       parts.place.placeInCar();
-      // Back in the office, in its elevator: the doors open onto it.
-      travel.lift()?.setOpen(true);
-    } else if (core.trip) travel.pending.placeOnArrival = true;
+      parts.travel.lift()?.setOpen(true);
+    } else if (settle && core.trip) parts.travel.pending.placeOnArrival = true;
     views.heraldHires.clear();
-    offTheRoof();
     ctx.hint.invalidate();
     ctx.hud.refresh();
+    return true;
+  }
+
+  /**
+   * The building changed maps (or you arrived and it's not the office): the old world goes, the new
+   * one's put up, every worker sits down in its seat there, and you come in where it has you arrive.
+   */
+  function applyMap() {
+    borrowedForRoof = false;
+    if (!swapWorld(store.plan(), true)) return;
+    offTheRoof();
   }
   store.on('map', applyMap);
+
+  /** Hall maps have no tower: put the office world up so the rooftop bar can load. Does not change store.map. */
+  function borrowOfficeForRoof() {
+    if (inOffice()) return;
+    borrowedForRoof = true;
+    swapWorld(OFFICE_PLAN, false);
+  }
+
+  /** After the rooftop: put the building's saved map back. */
+  function restoreAfterRoof() {
+    if (!borrowedForRoof) return;
+    borrowedForRoof = false;
+    swapWorld(store.plan(), true);
+  }
 
   /** Down off the roof, on a map with no roof to be up on (it changed while you were up there). */
   function offTheRoof() {
     if (!core.upTop || inOffice() || core.trip) return;
+    // Still marked on the roof after a map swap: borrow the tower instead of kicking (academy halls).
+    if (store.floor === ROOF && builtFloors().length > 0) {
+      borrowOfficeForRoof();
+      return;
+    }
     const f = builtFloors()[0];
     if (!f) return;
     parts.travel.leaveRoofFor(f.id);
@@ -133,5 +164,5 @@ export function installMaps(ctx: Ctx, core: CoreState, parts: MapsParts) {
     $('project').title = elsewhere ? `${elsewhere} worker${elsewhere === 1 ? '' : 's'} on other floors waiting on someone — click to go there` : 'Floors: go to another project';
   }
 
-  return { paintFloor, applyMap, offTheRoof, noticeWaiting };
+  return { paintFloor, applyMap, offTheRoof, noticeWaiting, borrowOfficeForRoof, restoreAfterRoof };
 }

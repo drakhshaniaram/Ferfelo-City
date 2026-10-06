@@ -89,7 +89,7 @@ export function installBar(ctx: Ctx, deps: BarDeps) {
     reach: 3.5,
     hint: () => {
       const cut = booze.cutOff(performance.now() / 1000);
-      return { k: String(cut), parts: [hintTitle('🍸 Sky Bar'), aside(cut ? "you've had enough" : 'drinks on the house'), key('E', cut ? 'Ask for water' : 'Order a drink')] };
+      return { k: String(cut), parts: [hintTitle('🍸 Sky Bar'), aside(cut ? "you've had enough" : 'drinks & snacks · international lounge'), key('E', cut ? 'Ask for water' : 'Order a drink')] };
     },
     use: onE(() => showBar()),
   });

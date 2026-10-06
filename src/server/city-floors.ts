@@ -20,7 +20,7 @@ export function addCityFloor(building: Building, city: string, by: string): Floo
   if (!existsSync(readme)) {
     writeFileSync(
       readme,
-      `# ${def.name}\n\nFerfelo Academy city floor. Practice language: **${def.targetLanguage}**.\nFellows on this floor speak ${def.targetLanguage} by default.\n`,
+      `# ${def.name}\n\n${def.mood}\n\nFerfelo Academy city floor. Practice language: **${def.targetLanguage}**.\nFellows on this floor speak ${def.targetLanguage} by default.\n\nMeet fellows from every city upstairs at the **rooftop international lounge** (fire, bar, club, snacks).\n`,
     );
   }
   return building.seedFloor(def.name, dir, by, { cityId: id, palette: def.palette });

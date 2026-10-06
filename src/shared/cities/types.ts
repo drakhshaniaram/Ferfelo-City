@@ -7,6 +7,10 @@ export interface CityDef {
   name: string;
   /** Short line on the elevator card. */
   blurb: string;
+  /** Atmosphere on arrival and in the project corner. */
+  mood: string;
+  /** One-line welcome toast when you step onto the floor. */
+  welcome: string;
   /** Fellows on this floor practice this language by default. */
   targetLanguage: LearnerLanguage;
   /** Sky / charts match string (e.g. "Amsterdam, Netherlands"). */

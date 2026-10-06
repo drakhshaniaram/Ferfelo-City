@@ -147,7 +147,7 @@ export function openElevator(opts: ElevatorOptions): void {
         'span.floor-text',
         {},
         h('span.floor-name', {}, f.name, here ? h('span.here-tag', {}, 'you are here') : mine ? h('span.here-tag', {}, 'your floor') : null),
-        h('span.floor-sub', {}, [f.cityId ? `${cityOf(f.cityId)?.icon ?? '🌆'} ${cityOf(f.cityId)?.targetLanguage ?? ''} · city` : f.repo ?? f.dir, f.cloning ? f.clone?.detail : ''].filter(Boolean).join(' · ')),
+        h('span.floor-sub', {}, [f.cityId ? `${cityOf(f.cityId)?.mood ?? cityOf(f.cityId)?.blurb ?? 'city'} · ${cityOf(f.cityId)?.targetLanguage ?? ''}` : f.repo ?? f.dir, f.cloning ? f.clone?.detail : ''].filter(Boolean).join(' · ')),
         f.cloning ? cloneBar(f.clone) : null,
       ),
       h('span.floor-stats', {}, ...stats.flatMap((s, j) => (j ? [' ', s] : [s]))),
@@ -190,9 +190,9 @@ export function openElevator(opts: ElevatorOptions): void {
     const people = [...store.peers.values()].filter((p) => p.floor === ROOF).length;
     const btn = h(
       'button.floor-btn',
-      { type: 'button', class: here ? 'here' : '', disabled: here, title: here ? "You're up on the roof" : `Ride up to the ${ROOF_NAME.toLowerCase()}` },
+      { type: 'button', class: here ? 'here' : '', disabled: here, title: here ? "You're up on the roof" : `Ride up to the ${ROOF_NAME.toLowerCase()} — gathering place for every floor` },
       h('span.floor-no', { style: 'background:#2b2d42' }, '🍸'),
-      h('span.floor-text', {}, h('span.floor-name', {}, ROOF_NAME, here ? h('span.here-tag', {}, 'you are here') : null), h('span.floor-sub', {}, 'The roof: a DJ playing drum and bass, a bar, and the city all around')),
+      h('span.floor-text', {}, h('span.floor-name', {}, ROOF_NAME, here ? h('span.here-tag', {}, 'you are here') : null), h('span.floor-sub', {}, 'International lounge: fire pit, bar, club floor, snacks — fellows from every city gather here')),
       h('span.floor-stats', {}, people ? h('span', { title: 'People up there' }, `🧑 ${people}`) : ''),
     );
     btn.addEventListener('click', () => {

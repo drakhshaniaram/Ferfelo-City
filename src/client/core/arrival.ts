@@ -22,7 +22,8 @@ import { routeTeamMessage } from '../ui/team';
 import { openTerminalFor, routeTerminalMessage } from '../ui/terminal';
 import { restarting, showRestarting, showUpgraded } from '../ui/upgrade';
 import { routeWhiteboardMessage } from '../features/whiteboard/ui';
-import { applyCityFloorLanguage } from '../features/fellows/city-language';
+import { cityOf } from '../../shared/cities';
+import { greetCityFloor } from '../features/fellows/city-language';
 import type { Ctx } from './context';
 import type { CoreState } from './ctx';
 import { builtFloors, pastTheWing } from './floors';
@@ -153,8 +154,17 @@ export function installArrival(ctx: Ctx, core: CoreState, parts: ArrivalParts) {
       travel.lift()?.setOpen(true);
     }
     parts.maps.offTheRoof();
+    if (store.floor === ROOF) {
+      const cities = store.floors.map((f) => cityOf(f.cityId)?.name).filter(Boolean) as string[];
+      toast(
+        cities.length
+          ? `🍸 International lounge — fellows from ${cities.join(', ')} gather here for drinks, fire, club nights and snacks`
+          : '🍸 International lounge — fire pit, bar, club floor and snacks for every floor’s fellows',
+        'info',
+      );
+    }
     const cityFloor = store.floors.find((f) => f.id === store.floor);
-    if (cityFloor?.cityId) applyCityFloorLanguage(cityFloor.cityId);
+    if (cityFloor?.cityId) greetCityFloor(cityFloor.cityId);
   });
   ctx.messages.on('signins', () => {
     // Someone who just joined starts here: their workers need their own Claude sign-in first.
@@ -190,10 +200,13 @@ export function installArrival(ctx: Ctx, core: CoreState, parts: ArrivalParts) {
     const p = store.project;
     renderTitle();
     if (store.floor === ROOF) {
+      const cities = store.floors.map((f) => cityOf(f.cityId)?.name).filter(Boolean) as string[];
       const n = builtFloors().length;
       $('project-meta').classList.remove('lobby');
       $('project-name').textContent = `🍸 ${ROOF_NAME}`;
-      $('project-meta').textContent = `🛗 on top of ${n} floor${n === 1 ? '' : 's'} · 🎧 drum & bass`;
+      $('project-meta').textContent = cities.length
+        ? `International lounge · ${cities.join(' · ')} · fire · bar · club · snacks`
+        : `International lounge · on top of ${n} floor${n === 1 ? '' : 's'} · fire · bar · club`;
       return;
     }
     if (!p) {
@@ -209,8 +222,16 @@ export function installArrival(ctx: Ctx, core: CoreState, parts: ArrivalParts) {
       ctx.world().setProjectName(store.floors.length ? 'Pick a floor' : academy ? 'Campus' : 'Lobby');
       return;
     }
+    const floor = store.floors.find((f) => f.id === store.floor);
+    const city = cityOf(floor?.cityId);
     const n = store.floors.findIndex((f) => f.id === store.floor);
     $('project-meta').classList.remove('lobby');
+    if (city) {
+      $('project-name').textContent = `${city.icon} ${city.name}`;
+      $('project-meta').textContent = [n >= 0 && `🛗 floor ${n + 1} of ${store.floors.length}`, city.mood, city.targetLanguage].filter(Boolean).join(' · ');
+      ctx.world().setProjectName(city.name);
+      return;
+    }
     $('project-name').textContent = `🏢 ${p.name}`;
     $('project-meta').textContent = [n >= 0 && `🛗 floor ${n + 1} of ${store.floors.length}`, p.branch && `⎇ ${p.branch}`, p.dir, `default: ${providerLabel(p.defaultProvider, p)}`].filter(Boolean).join(' · ');
     ctx.world().setProjectName(p.name);
