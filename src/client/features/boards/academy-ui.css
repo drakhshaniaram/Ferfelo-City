@@ -1,0 +1,10 @@
+.modal.academy-board { width: min(520px, 94vw); max-height: min(80vh, 720px); display: flex; flex-direction: column; }
+.modal.academy-board header { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 16px 8px; }
+.modal.academy-board h2 { margin: 0; font-size: 1.15rem; }
+.modal.academy-board h3 { margin: 16px 0 8px; font-size: 0.95rem; color: var(--muted, #6b7280); }
+.academy-board-body { overflow: auto; padding: 8px 16px 16px; display: flex; flex-direction: column; gap: 10px; }
+.academy-card { border: 2px solid var(--ink, #2b2d42); border-radius: 10px; padding: 12px; background: #fffaf3; box-shadow: 3px 3px 0 var(--ink, #2b2d42); }
+.academy-card-title { font-weight: 700; margin-bottom: 4px; }
+.academy-card-meta { font-size: 0.9rem; color: #4a5568; margin-bottom: 8px; }
+.academy-card-note { font-size: 0.85rem; margin: 0 0 10px; color: #5c4033; }
+.academy-card-actions { display: flex; gap: 8px; flex-wrap: wrap; }
