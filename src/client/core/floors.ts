@@ -2,7 +2,7 @@
  * The building's floors as the office and its parts see them: which are built, how far each one's
  * back office goes, and which seats are there to sit at.
  */
-import { DESK_BY_ID, FLOOR, WING, deskBuilt, inWing } from '../../shared/layout';
+import { DESK_BY_ID, FLOOR, WALL_HEIGHT, WING, deskBuilt, inWing } from '../../shared/layout';
 import type { FloorInfo } from '../../shared/protocol';
 import { store } from '../state';
 
@@ -32,4 +32,13 @@ export function seatBuilt(id: string): boolean {
  */
 export function pastTheWing(p: { x: number; y: number; z: number }, level: number): boolean {
   return p.y > -1 && p.y < 3 && p.x > WING.minX - 0.3 && p.x < WING.maxX + 0.3 && p.z < FLOOR.minZ && !inWing(p.x, p.z, level);
+}
+
+/**
+ * Whether a saved / peer spot is inside the office floor (or its built wing) — safe to restore on
+ * reopen. Hall/city coords (e.g. z ≈ -21) and the street are outside this and put you in the void.
+ */
+export function inOfficeFloor(p: { x: number; y: number; z: number }, wing: number): boolean {
+  if (p.y < -1 || p.y > WALL_HEIGHT) return false;
+  return (p.x > FLOOR.minX && p.x < FLOOR.maxX && p.z > FLOOR.minZ && p.z < FLOOR.maxZ) || inWing(p.x, p.z, wing);
 }

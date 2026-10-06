@@ -26,7 +26,7 @@ import { cityOf } from '../../shared/cities';
 import { greetCityFloor } from '../features/fellows/city-language';
 import type { Ctx } from './context';
 import type { CoreState } from './ctx';
-import { builtFloors, pastTheWing } from './floors';
+import { builtFloors, inOfficeFloor, pastTheWing } from './floors';
 import type { Parts } from './parts';
 
 export type ArrivalParts = Pick<Parts, 'worlds' | 'place' | 'travel' | 'maps' | 'views' | 'cards' | 'hoops' | 'bar' | 'golf' | 'bargames' | 'cars' | 'focus'>;
@@ -85,10 +85,13 @@ export function installArrival(ctx: Ctx, core: CoreState, parts: ArrivalParts) {
       // Back to where you were, if that was on this map (and not in the elevator: that's arriving).
       const saved = lastSpot();
       const sameMap = !!saved && (saved.map ?? OFFICE_PLAN.id) === plan().id;
-      // A hall of its own has nothing outside it to come back to (and its walls may have moved since).
+      // Office: only restore inside the floor (city/hall coords are nowhere here). Halls: inside bounds.
+      const wing = parts.worlds.officeWing();
       const b = plan().bounds;
-      const inRoom = inOffice() || (mine.x > b.minX + 0.3 && mine.x < b.maxX - 0.3 && mine.z > b.minZ + 0.3 && mine.z < b.maxZ - 0.3);
-      if (sameMap && inRoom && !(inOffice() && (inElevator(mine.x, mine.z) || pastTheWing(mine, parts.worlds.officeWing()))) && player.fits(mine.x, mine.z, mine.y)) {
+      const inRoom = inOffice()
+        ? inOfficeFloor(mine, wing)
+        : mine.x > b.minX + 0.3 && mine.x < b.maxX - 0.3 && mine.z > b.minZ + 0.3 && mine.z < b.maxZ - 0.3;
+      if (sameMap && inRoom && !(inOffice() && (inElevator(mine.x, mine.z) || pastTheWing(mine, wing))) && player.fits(mine.x, mine.z, mine.y)) {
         placeAt(mine);
         travel.arrive('back');
       } else {

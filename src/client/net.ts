@@ -1,4 +1,5 @@
 import type { ClientMsg, ServerMsg } from '../shared/protocol';
+import { OFFICE_MAP } from '../shared/maps';
 import { lastFloor, store, type Profile, type Spot } from './state';
 
 type Handler = (msg: ServerMsg) => void;
@@ -43,7 +44,9 @@ export class Net {
     if (floor) q.set('floor', floor);
     if (this.lite) q.set('lite', '1');
     const at = this.where();
-    if (floor && at?.floor === floor) {
+    // Hall/city spots are nowhere on the office tower (academy migrated off Ferfelo City map).
+    const hallMap = at?.map && at.map !== OFFICE_MAP;
+    if (floor && at?.floor === floor && !hallMap) {
       for (const k of ['x', 'y', 'z'] as const) q.set(k, at[k].toFixed(2));
       q.set('rotY', at.facing.toFixed(3));
     }

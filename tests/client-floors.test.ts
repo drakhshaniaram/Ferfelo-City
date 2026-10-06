@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { FLOOR, WING, WING_DESKS, wingMinZ } from '../src/shared/layout.js';
 import type { FloorInfo } from '../src/shared/protocol.js';
-import { builtFloors, floorWings, pastTheWing, seatBuilt } from '../src/client/core/floors.js';
+import { builtFloors, floorWings, inOfficeFloor, pastTheWing, seatBuilt } from '../src/client/core/floors.js';
 import { store } from '../src/client/state/index.js';
 
 const floor = (id: string, extra: Partial<FloorInfo> = {}) => ({ id, name: id, waiting: 0, people: 0, palette: 0, ...extra }) as FloorInfo;
@@ -47,4 +47,14 @@ test("past the wing: standing where the back office would be, further back than 
   assert.equal(pastTheWing({ x, y: -3, z: deep }, 0), false);
   assert.equal(pastTheWing({ x, y: 5, z: deep }, 0), false);
   assert.equal(pastTheWing({ x: WING.minX - 1, y: 0, z: deep }, 0), false);
+});
+
+test('inOfficeFloor: desk area yes; Ferfelo City / castle spawn (z≈-21) and the street no', () => {
+  assert.equal(inOfficeFloor({ x: 0, y: 0, z: 0 }, 0), true);
+  assert.equal(inOfficeFloor({ x: -2.6, y: 0, z: -21 }, 0), false);
+  assert.equal(inOfficeFloor({ x: 0, y: 0, z: FLOOR.maxZ + 5 }, 0), false);
+  assert.equal(inOfficeFloor({ x: 0, y: -4, z: 0 }, 0), false);
+  const wingX = (WING.minX + WING.maxX) / 2;
+  assert.equal(inOfficeFloor({ x: wingX, y: 0, z: wingMinZ(1) + 0.5 }, 0), false);
+  assert.equal(inOfficeFloor({ x: wingX, y: 0, z: wingMinZ(1) + 0.5 }, 1), true);
 });
