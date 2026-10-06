@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { CODING_KIOSK_SIGN } from '../../../shared/academy-boards';
 import { BEANBAGS, DESKS, DESK_SIZE, FLOOR, KIOSK, SEATING_BY_ID, STATIONS, STATION_AGENT, deskSeat, type DeskDef, type StationKind } from '../../../shared/layout';
 import { deskPoint } from '../../../shared/nav';
 import { mesh, roundedBox, textPlane, toon } from '../toon';
@@ -162,14 +163,12 @@ export function buildBeanbag(def: DeskDef, index: number): DeskView {
   return { def, group, laptopAnchor, seatAnchor, stage, chair: bag, vacancy, vacancyY };
 }
 
-const KIOSK_SIGN: Record<StationKind, string> = { issues: '📌 Ask me', pulls: '🔀 Ask me', queue: '📋 Ask me' };
-
 /**
  * A board agent's kiosk: a little counter in its color with a sign on the front, and the agent standing
  * behind it. Its `vacancy` is where the agent waits before anyone has asked it anything (main.ts puts
  * one there), in the same spot and pose as the one who gets hired.
  */
-export function buildKiosk(def: DeskDef): DeskView {
+export function buildKiosk(def: DeskDef): DeskView & { setSign(text: string): void } {
   const kind = def.station!;
   const group = new THREE.Group();
   group.position.set(def.x, 0, def.z);
@@ -180,11 +179,24 @@ export function buildKiosk(def: DeskDef): DeskView {
   group.add(mesh(roundedBox(width - 0.16, height - 0.1, depth - 0.12, 0.06), color, 0, (height - 0.1) / 2 + 0.04, 0));
   group.add(mesh(roundedBox(width - 0.02, 0.06, depth + 0.02, 0.05), toon(PALETTE.ink), 0, 0.03, 0));
   group.add(mesh(roundedBox(width, 0.06, depth, 0.05), toon(PALETTE.desk), 0, height - 0.03, 0));
-  const sign = textPlane(KIOSK_SIGN[kind], { bg: '#fffaf3', size: 56 });
+  let sign = textPlane(CODING_KIOSK_SIGN[kind], { bg: '#fffaf3', size: 56 });
   sign.scale.multiplyScalar(0.62);
   sign.position.set(0, height * 0.55, -(depth - 0.12) / 2 - 0.012);
   sign.rotation.y = Math.PI;
   group.add(sign);
+  const setSign = (text: string) => {
+    const next = textPlane(text, { bg: '#fffaf3', size: 56 });
+    next.scale.copy(sign.scale);
+    next.position.copy(sign.position);
+    next.rotation.copy(sign.rotation);
+    group.add(next);
+    sign.removeFromParent();
+    sign.geometry.dispose();
+    const mat = sign.material as THREE.MeshBasicMaterial;
+    mat.map?.dispose();
+    mat.dispose();
+    sign = next;
+  };
 
   // No laptop: its lid would hide the agent's face from whoever walks up, and its screen would face
   // the wall. The agent's terminal is a key press away (O).
@@ -208,7 +220,7 @@ export function buildKiosk(def: DeskDef): DeskView {
   stage.rotation.y = Math.PI;
   group.add(stage);
 
-  return { def, group, laptopAnchor, seatAnchor, stage, chair: new THREE.Group(), vacancy, vacancyY: 0 };
+  return { def, group, laptopAnchor, seatAnchor, stage, chair: new THREE.Group(), vacancy, vacancyY: 0, setSign };
 }
 
 declare module '../types' {
@@ -218,6 +230,8 @@ declare module '../types' {
      * just came out, in case someone is standing there.
      */
     setBeanbags(out: Set<string>): Collider[];
+    /** Swap kiosk front signs (Academy Scenes/Phrases/Practice vs coding Ask me). */
+    setKioskSigns(signs: Record<StationKind, string>): void;
   }
 }
 
@@ -275,11 +289,13 @@ export const beanbags: Fixture<'setBeanbags'> = (site) => {
 };
 
 /** The board agents' kiosks, each just west of its board. */
-export const kiosks: Fixture = (site) => {
+export const kiosks: Fixture<'setKioskSigns'> = (site) => {
+  const byKind = {} as Record<StationKind, ReturnType<typeof buildKiosk>>;
   for (const def of STATIONS) {
     const view = buildKiosk(def);
     site.group.add(view.group);
     site.desks.set(def.id, view);
+    byKind[def.station!] = view;
     // The kiosk and the agent behind it, back to the wall (they all stand by the north wall) so
     // nobody squeezes in behind, and up over the agent's head so nobody hops on it.
     const corners = [-1, 1].flatMap((t) => [-KIOSK.depth / 2, KIOSK.stand + 0.35].map((sz) => deskPoint(def, (t * KIOSK.width) / 2, sz)));
@@ -294,5 +310,8 @@ export const kiosks: Fixture = (site) => {
     // The agent, its name tag and the card over its head, up against the wall.
     site.wall('north', def.x, 1.45, 1.4, 2.9);
   }
-  return {};
+  const setKioskSigns = (signs: Record<StationKind, string>) => {
+    for (const kind of Object.keys(signs) as StationKind[]) byKind[kind]?.setSign(signs[kind]);
+  };
+  return { handle: { setKioskSigns } };
 };

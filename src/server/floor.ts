@@ -71,6 +71,8 @@ export interface FloorContext {
   lent(floor: Floor): boolean;
   /** Whether the building's map locks up workers sent home (see MapPlan.sendHome), instead of letting them go. */
   locksUp(): boolean;
+  /** Coding office vs Academy — board agents take names/briefs from this. */
+  mode(): import('../shared/mode.js').OfficeMode;
 }
 
 /** The open pull request on a floor's board whose head is `branch`. */
@@ -207,6 +209,7 @@ export class Floor {
       ctx.dshProfile,
     );
     this.workers.wing = () => this.plan.wing;
+    this.workers.mode = () => ctx.mode();
 
     this.github = new GitHub(
       def.dir,

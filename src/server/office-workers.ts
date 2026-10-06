@@ -6,7 +6,9 @@ import { writeFileSync } from 'node:fs';
 import path from 'node:path';
 import type { AgentEffort, AgentProvider, GhPull, QueueTask, WorkerInfo, WorkerStatus, WorktreeCleanup } from '../shared/protocol.js';
 import { isAgentEffort, isAgentProvider } from '../shared/protocol.js';
-import { DESK_BY_ID, STATION_AGENT } from '../shared/layout.js';
+import { stationAgentFor } from '../shared/academy-boards.js';
+import { DESK_BY_ID } from '../shared/layout.js';
+import type { OfficeMode } from '../shared/mode.js';
 import { workerPr } from '../shared/status.js';
 import { landedWork, notLeaving } from './leave-on-merge.js';
 
@@ -61,7 +63,7 @@ const clip = (s: string | undefined): string | undefined => {
   return t ? (t.length > LINE ? `${t.slice(0, LINE - 1)}…` : t) : undefined;
 };
 
-export function workerRow(w: WorkerInfo, view: PullsView, me?: string): WorkerRow {
+export function workerRow(w: WorkerInfo, view: PullsView, me?: string, mode: OfficeMode = 'coding'): WorkerRow {
   const seat = DESK_BY_ID.get(w.deskId);
   const pr = workerPr(w, view.pulls, view.tasks);
   const pull = pr && view.pulls.find((p) => p.number === pr.number);
@@ -77,7 +79,7 @@ export function workerRow(w: WorkerInfo, view: PullsView, me?: string): WorkerRo
     ...(w.model ? { model: w.model } : {}),
     desk: seat?.label ?? w.deskId,
     status: w.status,
-    ...(seat?.station ? { board: STATION_AGENT[seat.station].name } : {}),
+    ...(seat?.station ? { board: stationAgentFor(mode, seat.station).name } : {}),
     ...(w.meeting ? { meeting: true as const } : {}),
     ...(w.id === me ? { you: true as const } : {}),
     ...(task ? { task } : {}),

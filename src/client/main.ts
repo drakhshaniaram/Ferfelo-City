@@ -98,7 +98,7 @@ parts.worlds = createWorlds(ctx);
 installSky(ctx);
 
 // ---- The install list ---------------------------------------------------------------------------
-parts.boards = installBoards(ctx, { aimedNote: () => parts.pointer.aimedNote(), pickUp: (it) => parts.cards.pickUp(it), boardActions: () => parts.actions.boardActions(), showQueue: () => parts.waiting.showQueue() });
+parts.boards = installBoards(ctx, { aimedNote: () => parts.pointer.aimedNote(), pickUp: (it) => parts.cards.pickUp(it), boardActions: () => parts.actions.boardActions(), showQueue: () => parts.waiting.showQueue(), idleAgents: () => parts.worlds.idleAgents() });
 parts.gallery = installGallery(ctx);
 installWhiteboard(ctx);
 // Onto whatever you're walking on: the office's floor and furniture, or the roof's.

@@ -1,9 +1,16 @@
 /**
  * Shared helpers for city-floor cartoon set dressing.
+ *
+ * North-wall boards (Scenes / Practice / Phrases) sit roughly u ∈ [-15, 7]. Keep big murals and
+ * lanterns off that strip so they don't read as charts/tables over the boards.
  */
 import * as THREE from 'three';
 import { wallPose, type WallId } from '../../../shared/decor';
 import { mesh, toon } from '../../world/toon';
+
+/** North-wall u must be west of this or east of NORTH_BOARD_EAST to clear the cork boards. */
+export const NORTH_BOARD_WEST = -15.2;
+export const NORTH_BOARD_EAST = 8.5;
 
 export function disposeGroup(g: THREE.Object3D) {
   g.traverse((o) => {

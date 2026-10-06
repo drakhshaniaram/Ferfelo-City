@@ -25,6 +25,8 @@ Wall boards in Academy mode are learning tools, not GitHub:
 | Pull requests | **Phrase wall** — lines to try aloud |
 | Task queue | **Practice queue** — who’s mid-scene + what’s up next |
 
+The board agents rename with the mode: **Scenes guide**, **Phrase coach**, **Practice guide** (coding keeps Issues / PR / Queue agent). City-floor wall props stay clear of the north board strip so murals don’t sit on top of the boards.
+
 Staff still has Issues / PRs / Queue under **☰ → Office**. Pick a scene, walk to an empty desk, press **E** to invite a fellow into it. The rooftop gathers fellows from every floor. Admins can switch to **Coding office** in **⚙️ Settings → Building → Mode**. Empty-desk **P** invites a fellow.
 
 ## Chat

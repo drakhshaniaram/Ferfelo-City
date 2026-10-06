@@ -1,11 +1,11 @@
 import * as THREE from 'three';
-import { banner, box, cyl, lanterns, mesh, onWall, rug, sphere, toon } from './kit';
+import { NORTH_BOARD_EAST, NORTH_BOARD_WEST, banner, box, cyl, lanterns, mesh, onWall, rug, sphere, toon } from './kit';
 
 /** Tehran: turquoise tile, mountains, bazaar stalls, tea. */
 export function tehranLook(): THREE.Group {
   const root = new THREE.Group();
 
-  // Tile wall with arch
+  // Tile wall with arch on the south wall — north is the board strip.
   const wall = new THREE.Group();
   for (let row = 0; row < 4; row++) {
     for (let col = 0; col < 10; col++) {
@@ -19,9 +19,8 @@ export function tehranLook(): THREE.Group {
   arch.rotation.z = Math.PI;
   wall.add(arch);
   for (let i = 0; i < 7; i++) wall.add(sphere(0.07, '#ffe066', (i - 3) * 0.3, -0.85, 0.12));
-  root.add(onWall('north', 0, 3.0, wall));
+  root.add(onWall('south', 0, 3.0, wall));
 
-  // Azadi-inspired monument
   const azadi = new THREE.Group();
   azadi.add(box(0.5, 0.3, 0.4, '#f3e0c8', -0.7, -0.4, 0));
   azadi.add(box(0.5, 0.3, 0.4, '#f3e0c8', 0.7, -0.4, 0));
@@ -30,9 +29,8 @@ export function tehranLook(): THREE.Group {
   const top = mesh(new THREE.TorusGeometry(0.55, 0.12, 8, 20, Math.PI), toon('#f3e0c8'), 0, 0.85, 0, false);
   top.rotation.z = Math.PI;
   azadi.add(top);
-  root.add(onWall('north', -9, 2.7, azadi));
+  root.add(onWall('north', NORTH_BOARD_WEST - 0.7, 2.7, azadi));
 
-  // Alborz peaks
   const peaks = new THREE.Group();
   peaks.add(mesh(new THREE.ConeGeometry(0.8, 1.3, 4), toon('#8b9bb4'), -0.9, 0, 0, false));
   peaks.add(mesh(new THREE.ConeGeometry(1.1, 1.8, 4), toon('#6e7f99'), 0.4, 0.15, 0, false));
@@ -40,7 +38,6 @@ export function tehranLook(): THREE.Group {
   peaks.add(mesh(new THREE.ConeGeometry(0.4, 0.45, 4), toon('#fffaf3'), 0.4, 0.95, 0, false));
   root.add(onWall('west', 0, 2.2, peaks));
 
-  // Bazaar canopy
   for (const u of [-5, 0, 5]) {
     const stall = new THREE.Group();
     stall.add(box(1.5, 0.08, 0.8, '#c86a3a', 0, 0.9, 0));
@@ -53,7 +50,6 @@ export function tehranLook(): THREE.Group {
     root.add(onWall('east', u, 1.7, stall));
   }
 
-  // Tea samovar floor prop
   const tea = new THREE.Group();
   tea.add(cyl(0.28, 0.32, 0.55, '#c86a3a', 0, 0.4, 0));
   tea.add(cyl(0.12, 0.16, 0.2, '#0f9b8e', 0, 0.75, 0));
@@ -62,7 +58,6 @@ export function tehranLook(): THREE.Group {
   tea.position.set(-14, 0, -11);
   root.add(tea);
 
-  // Carpet stacks
   const rugsStack = new THREE.Group();
   for (let i = 0; i < 4; i++) {
     rugsStack.add(box(1.1, 0.12, 0.7, ['#c86a3a', '#0f9b8e', '#ffe066', '#8b3a22'][i], 0, 0.1 + i * 0.14, 0));
@@ -72,19 +67,19 @@ export function tehranLook(): THREE.Group {
 
   root.add(banner('south', -8, '#0f9b8e'));
   root.add(banner('south', -6, '#ffe066'));
-  root.add(lanterns('north', [-11, -6, 6, 11], ['#ffe066', '#c86a3a', '#14b8a6', '#ffe066']));
+  root.add(lanterns('north', [NORTH_BOARD_WEST - 1.3, NORTH_BOARD_EAST + 1.6, NORTH_BOARD_EAST + 3.6], ['#ffe066', '#c86a3a', '#14b8a6']));
+  root.add(lanterns('west', [-6, 0, 6], ['#ffe066', '#c86a3a', '#14b8a6']));
 
   root.add(rug(1.5, 1.1, '#0f9b8e', -12, -10));
   root.add(rug(1.3, 1.0, '#c86a3a', 12, 10));
   root.add(rug(1.2, 0.9, '#ffe066', -12, 10));
   root.add(rug(1.4, 1.0, '#8b3a22', 12, -10));
 
-  // Mini Milad
   const milad = new THREE.Group();
   milad.add(cyl(0.08, 0.2, 1.8, '#f3e0c8', 0, 0, 0));
   milad.add(box(0.5, 0.25, 0.5, '#14b8a6', 0, 0.7, 0));
   milad.add(sphere(0.12, '#ffe066', 0, 1.0, 0));
-  root.add(onWall('south', 6, 2.6, milad));
+  root.add(onWall('west', 8, 2.6, milad));
 
   return root;
 }

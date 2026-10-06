@@ -3,7 +3,9 @@ import path from 'node:path';
 import type { AgentChoice, AgentEffort, AgentProvider, TerminalHit, WorkerInfo, WorkerKind, WorkerRepo, WorkerStatus } from '../../shared/protocol.js';
 import { AGENT_PROVIDERS, takesEffort, takesModel } from '../../shared/providers.js';
 import { Worktrees, workspaceOf, type WorktreeCleanup, type WorktreeState } from '../worktrees.js';
-import { DESK_BY_ID, STATION_AGENT, deskBuilt } from '../../shared/layout.js';
+import { stationAgentFor } from '../../shared/academy-boards.js';
+import type { OfficeMode } from '../../shared/mode.js';
+import { DESK_BY_ID, deskBuilt } from '../../shared/layout.js';
 import { stationBrief } from '../stations.js';
 import type { PromptSource } from '../prompts.js';
 import type { GhAs } from '../signins.js';
@@ -72,6 +74,8 @@ export class WorkerManager {
   private saveTimer: NodeJS.Timeout;
   /** How many rows the floor's back office is built out: its desks past that aren't there to hire at (see WING). */
   wing: () => number = () => 0;
+  /** Coding vs Academy — board agent names and first-prompt briefs. */
+  mode: () => OfficeMode = () => 'coding';
 
   constructor(
     private dir: string,
@@ -81,13 +85,9 @@ export class WorkerManager {
     private hook: HookEnv,
     private events: WorkerEvents,
     private ledger: Ledger,
-    /** The office's worker limit, across every floor (see machine.ts). */
     private capacity?: Capacity,
-    /** The office's prompts and the worker everyone starts on, as set in ⚙️ Settings (see prompts.ts). */
     private prompts?: PromptSource,
-    /** Everyone's own sign-ins, for workers hired by an account. */
     private runAs?: RunAs,
-    /** The DSH profile a DeepSeek Harness worker boots (default "acp"). */
     dshProfile: string = DSH_PROFILE_DEFAULT,
   ) {
     this.defaultProvider = configuredProvider(agentCmd);
@@ -231,7 +231,7 @@ export class WorkerManager {
     const seat = DESK_BY_ID.get(deskId);
     if (!seat) return 'Unknown desk';
     if (!deskBuilt(seat, this.wing())) return `${seat.label} isn't built yet: expand the back office first`;
-    if (this.deskOccupied(deskId)) return seat.station ? `The ${STATION_AGENT[seat.station].name} is already there` : `That ${seat.beanbag ? 'bean bag' : 'desk'} is taken`;
+    if (this.deskOccupied(deskId)) return seat.station ? `The ${stationAgentFor(this.mode(), seat.station).name} is already there` : `That ${seat.beanbag ? 'bean bag' : 'desk'} is taken`;
     if (kind === 'shell' && seat.station) return 'A board agent is always an agent, not a shell';
     if (seat.station && !prompt?.trim()) return 'Tell the board agent what to do';
     if (!seat.room !== !meeting) return seat.room ? 'Only a meeting seats workers at the meeting table: call one in the meeting room' : 'A meeting seats its workers at the meeting table';
@@ -247,7 +247,7 @@ export class WorkerManager {
     const full = this.capacity?.full();
     if (full) return full;
     const used = new Set([...this.workers.values()].map((w) => w.info.name.replace(/ 🐚$/, '')));
-    const agent = seat.station && STATION_AGENT[seat.station];
+    const agent = seat.station && stationAgentFor(this.mode(), seat.station);
     const fellow = fellowLook(fellowId);
     const name = agent ? agent.name : fellow?.name ?? (NAMES.find((n) => !used.has(n)) ?? `Worker ${this.workers.size + 1}`);
     const id = randomBytes(6).toString('hex');
@@ -286,7 +286,7 @@ export class WorkerManager {
     this.workers.set(id, w);
     if (info.prompt) this.tasks.notePrompt(w, info.prompt);
     // A board agent is told what it's there for ahead of its first request (which is what shows).
-    this.launch(w, seat.station && info.prompt ? `${stationBrief(seat.station, this.prompts)}\n\n${info.prompt}` : info.prompt, undefined);
+    this.launch(w, seat.station && info.prompt ? `${stationBrief(seat.station, this.prompts, this.mode())}\n\n${info.prompt}` : info.prompt, undefined);
     this.persist();
     return info;
   }
@@ -307,7 +307,7 @@ export class WorkerManager {
     w.info.exitCode = undefined;
     const station = DESK_BY_ID.get(w.info.deskId)?.station;
     // A board agent with no session to carry on starts over, so it needs telling what it's for again.
-    const first = prompt && station && !w.info.sessionId ? `${stationBrief(station, this.prompts)}\n\n${prompt}` : prompt;
+    const first = prompt && station && !w.info.sessionId ? `${stationBrief(station, this.prompts, this.mode())}\n\n${prompt}` : prompt;
     if (prompt) {
       w.info.activity = truncate(prompt, 80);
       this.tasks.notePrompt(w, prompt);

@@ -3,13 +3,13 @@
  * requests, issues and services, and the people in it. Enter does it; Shift+Enter walks you over to
  * where it's done first.
  */
+import { stationInfoFor } from '../../../shared/academy-boards';
 import { DESK_BY_ID, DESKS, WING_DESKS, deskSeat, type DeskDef } from '../../../shared/layout';
 import { isAcademyMode } from '../../../shared/mode';
 import { isPaletteKey } from '../../../shared/palette';
 import type { Ctx } from '../../core/context';
 import { seatBuilt } from '../../core/floors';
 import type { Parts } from '../../core/parts';
-import { STATION_INFO } from '../../core/stations';
 import { isTyping } from '../../player';
 import { store } from '../../state';
 import { openAccounts } from '../../ui/accounts';
@@ -73,7 +73,7 @@ export function installPalette(ctx: Ctx, parts: PaletteParts) {
       const spot = desk && deskSpot(desk);
       const open = () => (w.fellowId ? actions.openFellow(w.id) : waiting.openWorkerTerminal(w.id));
       out.push({
-        icon: desk?.station ? STATION_INFO[desk.station].icon : w.fellowId ? '🎓' : w.kind === 'shell' ? '🐚' : '🧑‍💻',
+        icon: desk?.station ? stationInfoFor(store.mode, desk.station).icon : w.fellowId ? '🎓' : w.kind === 'shell' ? '🐚' : '🧑‍💻',
         kind: w.fellowId ? 'Fellow' : 'Worker',
         title: w.name,
         detail: [w.task?.name, desk?.label, STATUS_LABEL[w.status]].filter(Boolean).join(' · '),

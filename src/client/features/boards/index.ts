@@ -3,12 +3,15 @@
  * In Academy mode: Scenes, Phrase wall, Services (staff), Practice queue — immersive learning.
  */
 import type * as THREE from 'three';
+import { boardLabelsFor, kioskSignFor } from '../../../shared/academy-boards';
+import type { StationKind } from '../../../shared/layout';
 import { cityOf } from '../../../shared/cities';
 import { phrasesForCity, scenesForCity, type CityScene } from '../../../shared/cities/scenes';
 import { isAcademyMode } from '../../../shared/mode';
 import type { GhIssue } from '../../../shared/protocol';
 import type { Ctx } from '../../core/context';
 import { aside, boardHint, hintTitle, key, onE } from '../../core/hint';
+import { skinIdleAgents, type IdleAgent } from '../../core/stations';
 import { store, type Topic } from '../../state';
 import { setPendingScene } from '../../state/pending-scene';
 import { openBoard } from '../../ui/boards';
@@ -38,6 +41,7 @@ export interface BoardsDeps {
   pickUp(it: GhIssue): void;
   boardActions(): BoardActions;
   showQueue(): void;
+  idleAgents(): IdleAgent[];
 }
 
 export function installBoards(ctx: Ctx, deps: BoardsDeps) {
@@ -148,6 +152,7 @@ export function installBoards(ctx: Ctx, deps: BoardsDeps) {
     renderIssuesBoard();
     renderPullsBoard();
     renderQueueBoard();
+    syncAcademySkin();
     ctx.hud.refresh();
   });
   store.on('floor', () => {
@@ -160,6 +165,18 @@ export function installBoards(ctx: Ctx, deps: BoardsDeps) {
     renderPullsBoard();
     renderQueueBoard();
   });
+
+  function syncAcademySkin() {
+    const mode = store.mode;
+    office.setBoardLabels?.(boardLabelsFor(mode));
+    office.setKioskSigns?.({
+      issues: kioskSignFor(mode, 'issues'),
+      pulls: kioskSignFor(mode, 'pulls'),
+      queue: kioskSignFor(mode, 'queue'),
+    } satisfies Record<StationKind, string>);
+    skinIdleAgents(deps.idleAgents(), mode);
+  }
+  syncAcademySkin();
 
   ctx.interactions.define('issues', {
     reach: 9,

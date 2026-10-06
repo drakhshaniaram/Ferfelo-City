@@ -48,7 +48,7 @@ export async function officeWorkers(ctx: Ctx, req: http.IncomingMessage, res: ht
   const view: PullsView = { pulls: floor.github.pulls.items, tasks: floor.queue.state().tasks, pullsOf: (id) => ctx.floors.get(id)?.github.pulls.items };
   const row = (id: string) => {
     const w = floor.workers.get(id);
-    return w && workerRow(w, view, me.id);
+    return w && workerRow(w, view, me.id, ctx.officeMode.mode);
   };
   const action = url.pathname.slice('/office/workers'.length);
   if (req.method === 'GET' && !action) {
@@ -62,7 +62,7 @@ export async function officeWorkers(ctx: Ctx, req: http.IncomingMessage, res: ht
       defaultProvider: floor.workers.officeDefault.provider,
       freeDesk: free?.id ?? null,
       ...(ctx.ledger.hiringPaused ? { hiringPaused: ctx.ledger.hiringPaused } : {}),
-      workers: list.map((w) => workerRow(w, view, me.id)),
+      workers: list.map((w) => workerRow(w, view, me.id, ctx.officeMode.mode)),
     });
   }
   if (req.method !== 'POST' || !['', '/home', '/tell', '/pr'].includes(action)) return send(res, 405, { error: 'GET /office/workers, or POST to /office/workers, /office/workers/home, /office/workers/tell or /office/workers/pr' });
