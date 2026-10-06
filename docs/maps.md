@@ -2,7 +2,7 @@
 
 Back to the [README](../README.md).
 
-The office is one map the building can be. Under **⚙️ Settings → 🏢 Building → Map**, anyone can change it for everyone, on every floor: to the **🏰 Castle**, to the **🚀 Space station**, or to a map of your own. Everything that makes the office work comes along: the workers and their terminals, the issues and PR boards, the task queue and its agent, the services board, meetings, the merge gong, the budget and the limits. Workers keep their seats, since every map places the same seats (see [Seats](#seats)), so a map can change while they work.
+The office is one map the building can be. Under **⚙️ Settings → 🏢 Building → Map**, anyone can change it for everyone, on every floor: to the **🏰 Castle**, the **🚀 Space station**, **🌆 Ferfelo City** (academy hall), the **🚢 City-ship**, or to a map of your own. Everything that makes the office work comes along: the workers and their terminals, the issues and PR boards, the task queue and its agent, the services board, meetings, the merge gong, the budget and the limits. Workers keep their seats, since every map places the same seats (see [Seats](#seats)), so a map can change while they work.
 
 The office has plenty of its own that a map doesn't (the elevator, the balcony, the rooftop bar, the lounge, the dog, pictures on the walls). On another map you go to another project from the floor list in the top-left corner (or **☰ → Floors**), and each project's hall is dressed in its own colors: the castle's banners and shields, the station's lines of light.
 
@@ -28,6 +28,14 @@ A long pressurised deck in orbit: white hull panels and dark plating, ribs overh
 - **The benches.** Two long benches down each side of the deck, where the workers sit at their laptops. The seats toward the middle fill first.
 - **The boards** are displays on the side walls (*Incoming signals* for issues, *Mission queue*, *Docking requests* for pull requests, *Subsystems* for services), a board agent at a console under each of the first three. The **briefing table**, aft on the starboard side, is the meeting room, with its display on a stand beside it. The merge gong is by the bridge, there's a drinks dispenser aft (the coffee), and a holo-table in the middle of the deck with the Earth turning over it.
 - **The airlock.** Send a worker home (**X**) and **Security**, on watch by the airlock in the starboard wall, comes for it, says its piece, waits while it packs its box, and marches it across the deck. The inner door slides up, it's shoved through, and the door comes down behind it: you can see it through the porthole, under the red lights. Then the outer hatch parts and it's blown out into space, tumbling, box and all. **Stand at one of the two big observation windows either side of the airlock to watch it go.** It doesn't come back: everyone ever ejected is still out there, adrift, each off on a heading of its own and turning over as it goes, quickly at first and slower by the hour, out to about 40 m. They waste away as the castle's prisoners do: thinner for an hour until the air's gone (☠️ on its name tag), then down to a skeleton (💀) over the next twelve. The latest 30 are still to be seen; the ones from before them have drifted out of sight. It's the same for workers that go home on their own when their pull request merges, ones another worker sends home, and ones the task queue sends home to make room; a meeting's workers still just walk out of the docking port. Each floor has its own, and it's the same list the castle's dungeon keeps (the project's `.agent-office/jail.json`): change the building from the station to the castle and the ones adrift are in the cells.
+
+## Ferfelo City
+
+Academy hall on the castle kit: same seats, tables, line and dungeon, dressed as a civic learning plaza. The **Concierge** invites language fellows; boards read as notices, scenes waiting, a reading list and campus services. Pick it under **⚙️ Settings → Building → Map**.
+
+## City-ship
+
+Academy vessel on the station kit: same benches, bridge chair, airlock and boards, with a **Steward** who brings fellows aboard. Decks stay one project folder under the hood. Same seat contract as every other map.
 
 ## Maps of your own
 

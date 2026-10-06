@@ -12,9 +12,11 @@ Forked from [AgentSystemLabs/agent-office](https://github.com/AgentSystemLabs/ag
 
 ## What it is (academy)
 
-- **Fellows at desks.** Walk up to an empty desk, press **E**, pick a fellow (Lena, Marco, Sofia, Joost, Dr. Park, Alex, Maya…), set your native/target language and learner level (Newbie / Growing / Immersed), and optionally tweak the scene. The fellow sits down with a brief that keeps them in character and scaffolds speech for your level.
+- **Fellows at desks.** Walk up to an empty desk, press **E**, pick a fellow (Lena, Marco, Sofia, Joost, Dr. Park, Alex, Maya…), set your native/target language and learner level (Newbie / Growing / Immersed), and optionally tweak the scene. Change languages later in **⚙️ Settings → You**. The fellow sits down with a brief that keeps them in character and scaffolds speech for your level.
 - **Scenes, not tickets.** Celebrate Oktoberfest-style in Hamburg, cook dinner, plan a rainy Amsterdam afternoon, unpack Cola Zero biology, skim US news, or shadow a YouTube clip — all aimed at living the language, not shipping PRs.
-- **Same building.** Floors, voice, TV, whiteboard, and agent terminals still work; coding hire paths (task prompt / boards) remain for anyone who wants them.
+- **Academy mode.** Default skin hides coding boards from the main menu (Staff tools still have them). Admins switch modes in Settings → Building. Maps include **Ferfelo City** and **City-ship** alongside Office / Castle / Station.
+- **Rooftop club.** Elevator up for DJ, drinks, karaoke on the stage, and a Top 30 board keyed to the office sky city.
+- **Same building.** Floors, voice, TV, whiteboard, and agent terminals still work; coding hire paths remain when you want them.
 
 Upstream office features (floors per GitHub repo, boards, worktrees, maps) are documented below for this fork’s base.
 

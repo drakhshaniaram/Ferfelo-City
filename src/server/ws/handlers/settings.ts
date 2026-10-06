@@ -7,6 +7,7 @@ import { OFFICE_MAP } from '../../../shared/maps/index.js';
 import { isThemePick } from '../../../shared/theme.js';
 import { PROMPTS, PROMPT_MAX, isPromptId } from '../../../shared/prompts.js';
 import type { SettingsClientMsg } from '../../../shared/protocol.js';
+import { parseOfficeMode } from '../../../shared/mode.js';
 import type { Ctx } from '../../office/context.js';
 import { str } from '../../office/input.js';
 import type { HandlerMap, ViewPieces } from './types.js';
@@ -132,5 +133,13 @@ export const settingsHandlers = {
     const err = ctx.prompts.setAgent(choice, who);
     if (err) return ctx.warn(c, err);
     ctx.toastAll(choice ? `🤖 ${who} set the office’s default worker` : `🤖 ${who} put the office’s default worker back to ${path.basename(ctx.cfg.agentCmd)}`);
+  },
+  'office.mode'(ctx, c, msg) {
+    const who = c.peer.name;
+    if (!ctx.meOf(c.accountId).admin) return ctx.warn(c, 'Only admins can change the building’s mode');
+    const mode = parseOfficeMode(msg.mode);
+    if (mode === ctx.officeMode.mode) return;
+    ctx.officeMode.set(mode, who);
+    ctx.toastAll(mode === 'academy' ? `🎓 ${who} switched the building to Academy` : `💻 ${who} switched the building to the coding office`);
   },
 } satisfies HandlerMap<SettingsClientMsg>;

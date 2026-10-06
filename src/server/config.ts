@@ -5,6 +5,7 @@ import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { WEATHERS, type Weather } from '../shared/protocol.js';
 import { AGENT_PROVIDERS, PROVIDER_META } from '../shared/providers.js';
+import { parseOfficeMode, type OfficeMode } from '../shared/mode.js';
 import { MAX_WORKER_LIMIT, parseWorkerLimit } from './machine.js';
 
 export interface Config {
@@ -61,6 +62,8 @@ export interface Config {
   weather?: Weather;
   /** The sky keeps real time (a day a day), instead of a whole day and night every hour. */
   realTimeSky: boolean;
+  /** Academy (language fellows) vs coding-office skin (env AGENT_OFFICE_MODE). */
+  mode: OfficeMode;
 }
 
 export interface RTCIceServerLike {
@@ -241,6 +244,7 @@ export function loadConfig(argv: string[]): Config {
   let city = process.env.AGENT_OFFICE_CITY || '';
   let weather = process.env.AGENT_OFFICE_WEATHER || '';
   let realTimeSky = process.env.AGENT_OFFICE_SKY_CLOCK === 'real';
+  let mode = parseOfficeMode(process.env.AGENT_OFFICE_MODE ?? 'academy');
   const iceServers: RTCIceServerLike[] = [{ urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302'] }];
   // A container can't take --turn (deploy/container/compose.yaml), so the TURN servers come from the environment too.
   for (const url of (process.env.AGENT_OFFICE_TURN ?? '').split(/\s+/).filter(Boolean)) iceServers.push(parseTurn(url));
@@ -319,6 +323,9 @@ export function loadConfig(argv: string[]): Config {
         break;
       case '--city':
         city = takeValue(argv, i++, a);
+        break;
+      case '--mode':
+        mode = parseOfficeMode(takeValue(argv, i++, a));
         break;
       case '--weather':
         weather = takeValue(argv, i++, a);
@@ -463,6 +470,7 @@ export function loadConfig(argv: string[]): Config {
     city: city.trim() || undefined,
     weather: (weather as Weather) || undefined,
     realTimeSky,
+    mode,
   };
 }
 

@@ -1,0 +1,28 @@
+// Language fellow types: catalog entries and learner profile.
+
+export type FellowId = 'oktoberfest' | 'chef' | 'checkin' | 'amsterdam' | 'biology' | 'news' | 'youtube';
+
+export type LearnerLevel = 'newbie' | 'growing' | 'immersed';
+
+export interface FellowSpec {
+  id: FellowId;
+  name: string;
+  color: string;
+  role: string;
+  defaultScene: string;
+  /** Scene tools this fellow may use (product stubs for now; the brief names them). */
+  tools: string[];
+}
+
+export interface LearnerProfile {
+  nativeLanguage: string;
+  targetLanguage: string;
+  level: LearnerLevel;
+}
+
+export interface LevelScaffolding {
+  label: string;
+  targetShare: number;
+  nativeShare: number;
+  scaffolding: string;
+}

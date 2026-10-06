@@ -1,20 +1,13 @@
 import './hire.css';
 import type { AgentEffort, AgentProvider } from '../../../shared/protocol';
-import {
-  FELLOW_CATALOG,
-  FELLOW_IDS,
-  LEARNER_LANGUAGES,
-  isRtlLanguage,
-  type FellowId,
-  type LearnerLanguage,
-  type LearnerProfile,
-} from '../../../shared/fellows';
+import { FELLOW_CATALOG, FELLOW_IDS, type FellowId } from '../../../shared/fellows';
 import { h, openModal } from '../../ui/dom';
 import { dictateField } from '../../ui/dictate';
 import { providerPicker, type ProviderPicker } from '../../ui/provider';
 import { store } from '../../state';
 import { loadLearner, saveLearner } from '../../state/learner';
 import { pressureNote } from '../../../shared/machine';
+import { learnerFields } from './learner-ui';
 
 export interface FellowHireOpts {
   deskLabel: string;
@@ -107,68 +100,4 @@ export function openFellowHire(opts: FellowHireOpts) {
       send();
     }
   });
-}
-
-function languageSelect(value: string, ariaLabel: string): HTMLSelectElement {
-  const sel = h('select', { 'aria-label': ariaLabel, dir: isRtlLanguage(value) ? 'rtl' : 'ltr' }) as HTMLSelectElement;
-  for (const lang of LEARNER_LANGUAGES) {
-    const opt = h('option', { value: lang }, lang) as HTMLOptionElement;
-    if (lang === value) opt.selected = true;
-    sel.append(opt);
-  }
-  // Old free-text saves that aren’t in the catalog — keep them selectable until changed.
-  if (value && !(LEARNER_LANGUAGES as readonly string[]).includes(value)) {
-    sel.prepend(h('option', { value, selected: 'true' }, value) as HTMLOptionElement);
-  }
-  sel.addEventListener('change', () => {
-    sel.dir = isRtlLanguage(sel.value) ? 'rtl' : 'ltr';
-  });
-  return sel;
-}
-
-function learnerFields(learner: LearnerProfile, onChange: (next: LearnerProfile) => void): HTMLElement {
-  const native = languageSelect(learner.nativeLanguage, 'Native language');
-  const target = languageSelect(learner.targetLanguage, 'Target language');
-  const levels = h('div.seg.fellow-levels', { role: 'radiogroup', 'aria-label': 'Learner level' });
-  const paint = () => {
-    levels.replaceChildren(
-      ...(['newbie', 'growing', 'immersed'] as const).map((level) =>
-        h(
-          'button.btn',
-          {
-            type: 'button',
-            role: 'radio',
-            'aria-checked': String(learner.level === level),
-            class: learner.level === level ? 'on' : '',
-            onclick: () => {
-              learner = { ...learner, level };
-              onChange(learner);
-              paint();
-            },
-          },
-          level === 'newbie' ? 'Newbie' : level === 'growing' ? 'Growing' : 'Immersed',
-        ),
-      ),
-    );
-  };
-  paint();
-  const commit = () => {
-    learner = {
-      ...learner,
-      nativeLanguage: (native.value || learner.nativeLanguage) as LearnerLanguage,
-      targetLanguage: (target.value || learner.targetLanguage) as LearnerLanguage,
-    };
-    onChange(learner);
-  };
-  native.addEventListener('change', commit);
-  target.addEventListener('change', commit);
-  return h(
-    'div.fellow-learner',
-    {},
-    h('label', {}, 'Your languages'),
-    h('div.fellow-langs', {}, native, h('span.fellow-lang-arrow', { 'aria-hidden': 'true' }, '→'), target),
-    h('div.fellow-lang-hints', {}, h('small', {}, 'Native'), h('small', {}, 'Learning')),
-    h('label', { style: 'margin-top:8px' }, 'Level'),
-    levels,
-  );
 }

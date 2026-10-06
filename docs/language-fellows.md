@@ -7,11 +7,15 @@ Ferfelo Academy turns empty desks into seats for **language fellows**: cultural-
 ## Hire
 
 1. Walk to an empty desk and press **E**.
-2. Pick **native** and **learning** languages from the list (Persian, Central Kurdish (Sorani), English, German, French, and more — either side), plus level (**Newbie** / **Growing** / **Immersed**). Kept in this browser.
+2. Pick **native** and **learning** languages from the list (Persian, Central Kurdish (Sorani), English, German, French, and more — either side), plus level (**Newbie** / **Growing** / **Immersed**). Kept in this browser — also editable any time under **⚙️ Settings → You → Learner**.
 3. Pick a fellow and optionally rewrite the scene note.
 4. Invite — fellows default to **Cursor** (✏️ Edit to pick another provider).
 
 The fellow sits down under their catalog name (Lena, Marco, …) with a brief that sets role, language mix, scene, and soft tool hints. Chat opens automatically.
+
+## Mode
+
+The building runs as **Academy** by default (`AGENT_OFFICE_MODE=academy` or `--mode academy`). Admins can switch to **Coding office** in **⚙️ Settings → Building → Mode** to surface GitHub boards in the main menu again. In Academy mode those boards sit under Staff tools.
 
 ## Chat
 
@@ -41,10 +45,13 @@ Persian, Central Kurdish (Sorani), Arabic, and Hebrew render **RTL** in chat (ti
 
 ## Code
 
-- Catalog, language list, and briefs: `src/shared/fellows.ts`
-- Hire UI: `src/client/features/fellows/`
-- Learner profile: `src/client/state/learner.ts`
+- Fellow definitions (one file each): `src/shared/fellows/` — add a def + one line in `catalog.ts`
+- Hire / chat / learner UI: `src/client/features/fellows/`
+- Learner profile: `src/client/state/learner.ts` (Settings → You)
 - Desk **E** opens fellow hire: `src/client/features/workers/actions.ts`
+- Rooftop Top 30: `src/shared/charts.ts` + `src/client/features/charts/`
+- Karaoke stage: `src/client/features/karaoke/`
+- Maps: Ferfelo City + City-ship in `src/shared/maps/city.ts` and `ship.ts`
 - Logic prototype (throwaway): `prototypes/language-fellows-logic.html`
 
 Coding hire paths (boards, **P** task prompt, shells) still work. Real TripAdvisor / YouTube UI tools are stubs named in the brief for now.

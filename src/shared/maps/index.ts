@@ -2,9 +2,11 @@ import { BEANBAGS, BOARDS, DESKS, ELEVATOR, ELEVATOR_CAR, EXIT_DOOR, FLOOR, MEET
 import type { Circle, Rect } from '../nav.js';
 import { planAirlock, wallOpenings } from './airlock.js';
 import { CASTLE } from './castle.js';
+import { CITY } from './city.js';
 import { MapError, isObj, num, str } from './check.js';
 import { overlaps, planDungeon, planSendHome } from './dungeon.js';
 import { PROP_KINDS, boxFootprint, propFootprint, propTop } from './props.js';
+import { SHIP } from './ship.js';
 import { STATION } from './station.js';
 import { STATION_PROP_KINDS, stationFootprint, stationTop } from './station-props.js';
 import { BOARD_KEYS, MAP_STYLES, type BoardDef, type BoardKey, type MapChoice, type MapConfig, type MapPlan, type MapStyle, type PropConfig, type TableConfig } from './types.js';
@@ -16,7 +18,7 @@ export { DUNGEON_SLAB, SEND_HOME_STEPS, dungeonClear, levelRoute, prisonSeat, wa
 /** The office: built in code (world/office/), and what the building is until someone picks another map. */
 export const OFFICE_MAP = 'office';
 /** The maps that come with the office, besides the office itself. */
-export const BUILTIN_MAPS: readonly MapConfig[] = [CASTLE, STATION];
+export const BUILTIN_MAPS: readonly MapConfig[] = [CASTLE, STATION, CITY, SHIP];
 
 /** The props each style of map can put up (see ./props.ts and ./station-props.ts): their kinds, the floor each takes and how high it reaches. */
 const STYLE_PROPS: Record<MapStyle, { kinds: Readonly<Record<string, string>>; footprint: typeof propFootprint; top(p: PropConfig): number }> = {

@@ -12,6 +12,9 @@ import { agentFields, choiceLabel, officeChoice } from './provider';
 import { openPromptEditor, rewrittenPrompts } from './prompts';
 import { outsideSetting } from './settings-sky';
 import { choiceRow } from './settings-rows';
+import { loadLearner, saveLearner } from '../state/learner';
+import { learnerFields } from '../features/fellows/learner-ui';
+import { isAcademyMode, type OfficeMode } from '../../shared/mode';
 
 const VIEWS: [ViewMode, string, string][] = [
   ['first', '👀 First person', 'See through your own eyes. Click the office to look around with the mouse and click things to use them. Esc frees the mouse.'],
@@ -26,10 +29,10 @@ const WEBHOOK_NAME: Record<WebhookKind, string> = { slack: 'Slack', discord: 'Di
 export type SettingsPane = 'you' | 'sound' | 'notify' | 'building' | 'workers';
 
 const PANES: { id: SettingsPane; icon: string; label: string; blurb: string }[] = [
-  { id: 'you', icon: '🧍', label: 'You', blurb: 'How you look, how you see the office, and how you’re signed in.' },
+  { id: 'you', icon: '🧍', label: 'You', blurb: 'How you look, your learner languages, how you see the building, and how you’re signed in.' },
   { id: 'sound', icon: '🔊', label: 'Sound & voice', blurb: 'How loud the office is for you, and how voice chat works.' },
   { id: 'notify', icon: '🔔', label: 'Notifications', blurb: 'Hear about a worker that needs someone, or finished, while you’re somewhere else.' },
-  { id: 'building', icon: '🏢', label: 'Building', blurb: 'The map, the decorations, the sky, the dog, and where new floors are cloned.' },
+  { id: 'building', icon: '🏢', label: 'Building', blurb: 'Academy or coding mode, the map, decorations, the sky, the dog, and where new floors are cloned.' },
   { id: 'workers', icon: '🤖', label: 'Workers', blurb: 'What workers start on, how many run at once, when they go home and what the office tells them.' },
 ];
 
@@ -442,9 +445,48 @@ export function openSettings(net: Net, settings: Settings, onChange: (s: Setting
   const signOut = h('button.btn', { type: 'button' }, '🚪 Sign out');
   signOut.addEventListener('click', onSignOut);
   const character = h('button.btn', { type: 'button' }, account ? '🧍 Change your look' : '🧍 Change your look & name');
+  const learnerNote = h('p.setting-note', {}, 'Kept in this browser. Fellows already at desks keep their old brief until you re-invite them.');
+  const learnerBox = learnerFields(loadLearner(), (next) => {
+    saveLearner(next);
+    learnerNote.textContent = 'Saved. Re-invite a fellow at a desk so their brief picks up the new languages and level.';
+  });
+  const modeRow = h('div.seg', { role: 'radiogroup', 'aria-label': 'Building mode' });
+  const modeNote = h('p.setting-note');
+  const paintMode = () => {
+    const mode = store.mode;
+    modeRow.replaceChildren(
+      ...([
+        ['academy', '🎓 Academy'],
+        ['coding', '💻 Coding office'],
+      ] as const).map(([id, label]) =>
+        h(
+          'button.btn',
+          {
+            type: 'button',
+            role: 'radio',
+            'aria-checked': String(mode === id),
+            class: mode === id ? 'on' : '',
+            disabled: !store.me.admin,
+            onclick: () => {
+              if (!store.me.admin || mode === id) return;
+              net.send({ t: 'office.mode', mode: id as OfficeMode });
+            },
+          },
+          label,
+        ),
+      ),
+    );
+    modeNote.textContent = store.me.admin
+      ? isAcademyMode(mode)
+        ? 'Academy: desks invite language fellows; GitHub boards stay in Staff tools. Same for everyone in the building.'
+        : 'Coding office: full boards, queue and worker hire. Same for everyone in the building.'
+      : `${isAcademyMode(mode) ? 'Academy' : 'Coding office'} mode (an admin can change it).`;
+  };
+  paintMode();
   const panes: Record<SettingsPane, Node[]> = {
     you: [
-      setting('Your character', null, character),
+      setting('Your look', null, character, h('p.setting-note', {}, 'Name, skin, hair and shirt — open any time after you join.')),
+      setting('Learner', 'you', learnerBox, learnerNote),
       setting('Camera view', 'you', seg, note),
       setting('Signed in', null, h('div.volume', {}, signOut), h('p.setting-note', {}, account ? `As ${account.name}, with your own account (${account.role}).` : 'With the shared office password.')),
     ],
@@ -460,6 +502,7 @@ export function openSettings(net: Net, settings: Settings, onChange: (s: Setting
       setting('Team notifications (Slack / Discord)', 'office', h('div.webhook', {}, hookInput, hookSave), hookActions, hookStatus),
     ],
     building: [
+      setting('Mode', 'office', modeRow, modeNote),
       setting('Map', 'office', mapRow, mapNote, mapBad),
       setting('Holiday theme', 'office', themeRow, themeNote),
       ...(sky ? [sky.section] : []),
@@ -512,6 +555,7 @@ export function openSettings(net: Net, settings: Settings, onChange: (s: Setting
   const offDog = store.on('dog', paintDog);
   const offTheme = store.on('theme', paintTheme);
   const offMap = store.on('map', paintMap);
+  const offMode = [store.on('mode', paintMode), store.on('me', paintMode)];
   const offLeave = store.on('leaveOnMerge', paintLeave);
   const offLimit = [store.on('machine', paintLimit), store.on('me', paintLimit)];
   const offDir = [store.on('projectsDir', paintDir), store.on('me', paintDir)];
@@ -524,6 +568,7 @@ export function openSettings(net: Net, settings: Settings, onChange: (s: Setting
       offTheme();
       sky?.off();
       offMap();
+      offMode.forEach((off) => off());
       offLeave();
       offLimit.forEach((off) => off());
       offDir.forEach((off) => off());

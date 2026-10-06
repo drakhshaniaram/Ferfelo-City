@@ -1,8 +1,11 @@
 // ⚙️ Settings and the building's services: notifications, the machine, upgrades, the sky, holidays, maps, prompts.
 
 import type { CustomMap } from '../maps/index.js';
+import type { OfficeMode } from '../mode.js';
 import type { PromptId } from '../prompts.js';
 import type { AgentChoice } from './agents.js';
+
+export type { OfficeMode } from '../mode.js';
 
 /**
  * The prompts the office writes for workers by itself (shared/prompts.ts) and the worker everyone
@@ -190,7 +193,9 @@ export type SettingsClientMsg =
   /** Rewrite one of the office's prompts (admins only); null puts the default back. */
   | { t: 'prompts.set'; id: PromptId; text: string | null }
   /** Pick the worker everyone starts on (admins only); null goes back to the office's --agent. */
-  | { t: 'prompts.agent'; choice: AgentChoice | null };
+  | { t: 'prompts.agent'; choice: AgentChoice | null }
+  /** Admins: Ferfelo Academy vs coding-office skin for everyone in the building. */
+  | { t: 'office.mode'; mode: OfficeMode };
 
 export type SettingsServerMsg =
   | { t: 'upgrade'; state: UpgradeState }
@@ -201,4 +206,5 @@ export type SettingsServerMsg =
   | { t: 'theme'; state: ThemeState }
   | { t: 'map'; state: MapState }
   | { t: 'prompts'; state: PromptsState }
-  | { t: 'leaveOnMerge'; state: LeaveOnMergeState };
+  | { t: 'leaveOnMerge'; state: LeaveOnMergeState }
+  | { t: 'office.mode'; mode: OfficeMode };

@@ -22,6 +22,7 @@ import { leaveOnMerge } from './leave-on-merge';
 import { machine } from './machine';
 import { map } from './map';
 import { meeting } from './meeting';
+import { mode } from './mode';
 import { notify } from './notify';
 import { prompts } from './prompts';
 import { services } from './services';
@@ -45,6 +46,7 @@ export const SLICES: readonly Slice[] = [
   theme,
   prompts,
   leaveOnMerge,
+  mode,
   map,
   floor,
   meeting,

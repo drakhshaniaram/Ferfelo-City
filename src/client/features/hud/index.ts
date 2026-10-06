@@ -17,6 +17,7 @@ import { $ } from '../../ui/dom';
 import { toggleFloorMenu } from '../../ui/floormenu';
 import { openHelp } from '../../ui/hud';
 import { mountHud } from '../../ui/menu';
+import { isAcademyMode } from '../../../shared/mode';
 import { openServices } from '../../ui/services';
 import { openSettings, type SettingsPane } from '../../ui/settings';
 import { needsSigningIn, openSignIns } from '../../ui/signins';
@@ -49,10 +50,12 @@ export function installHud(ctx: Ctx, core: CoreState, parts: HudParts) {
   const noMedia = () => (window.isSecureContext ? undefined : 'Voice and screen sharing need HTTPS or localhost — use a TLS proxy, --self-signed, or an SSH tunnel');
   const hud = mountHud(
     [
-      { id: 'issues', icon: '📌', label: 'Issues', section: 'Open', count: () => store.issues.items.filter((i) => i.state === 'OPEN').length, run: () => openBoard('issues', net, actions.boardActions()) },
-      { id: 'pulls', icon: '🔀', label: 'Pull requests', section: 'Open', count: () => store.pulls.items.filter((p) => p.state === 'OPEN').length, run: () => openBoard('pulls', net, actions.boardActions()) },
-      { id: 'queue', icon: '📋', label: 'Task queue', section: 'Open', count: () => store.queue.tasks.filter((t) => t.status !== 'done').length, title: () => 'Issues and tasks waiting for a worker', run: waiting.showQueue },
-      { id: 'services', icon: '🌐', label: 'Services', section: 'Open', count: () => store.services.items.length, title: () => 'Web servers the workers are running', run: () => openServices() },
+      { id: 'issues', icon: '📌', label: 'Issues', section: 'Open', shown: () => !isAcademyMode(store.mode), count: () => store.issues.items.filter((i) => i.state === 'OPEN').length, run: () => openBoard('issues', net, actions.boardActions()) },
+      { id: 'pulls', icon: '🔀', label: 'Pull requests', section: 'Open', shown: () => !isAcademyMode(store.mode), count: () => store.pulls.items.filter((p) => p.state === 'OPEN').length, run: () => openBoard('pulls', net, actions.boardActions()) },
+      { id: 'queue', icon: '📋', label: 'Task queue', section: 'Open', shown: () => !isAcademyMode(store.mode), count: () => store.queue.tasks.filter((t) => t.status !== 'done').length, title: () => 'Issues and tasks waiting for a worker', run: waiting.showQueue },
+      { id: 'services', icon: '🌐', label: 'Services', section: 'Open', shown: () => !isAcademyMode(store.mode), count: () => store.services.items.length, title: () => 'Web servers the workers are running', run: () => openServices() },
+      { id: 'staff-issues', icon: '📌', label: 'Staff: Issues', section: 'Office', shown: () => isAcademyMode(store.mode), count: () => store.issues.items.filter((i) => i.state === 'OPEN').length, title: () => 'Coding boards (staff)', run: () => openBoard('issues', net, actions.boardActions()) },
+      { id: 'staff-pulls', icon: '🔀', label: 'Staff: Pull requests', section: 'Office', shown: () => isAcademyMode(store.mode), count: () => store.pulls.items.filter((p) => p.state === 'OPEN').length, title: () => 'Coding boards (staff)', run: () => openBoard('pulls', net, actions.boardActions()) },
       { id: 'whiteboard', icon: '📝', label: 'Whiteboard', section: 'Open', title: () => 'Draw together, live', run: () => openWhiteboard(net) },
       // Up on the top bar while a meeting is on: what's being worked through in the meeting room.
       {

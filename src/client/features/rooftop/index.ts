@@ -21,6 +21,7 @@ export interface RooftopDeps {
 export function installRooftop(ctx: Ctx, deps: RooftopDeps) {
   /** Up on the roof: built the first time anyone goes up there. */
   let roof: Rooftop | null = null;
+  const ready: Array<(r: Rooftop) => void> = [];
   function theRoof(): Rooftop {
     if (!roof) {
       roof = buildRooftop(ctx.office.night, roofFloors());
@@ -29,8 +30,15 @@ export function installRooftop(ctx: Ctx, deps: RooftopDeps) {
       roof.games.onDrop = (at) => ctx.sound.toss('drop', at);
       ctx.scene.add(roof.group);
       noOutline(roof.group);
+      for (const fn of ready) fn(roof);
+      ready.length = 0;
     }
     return roof;
+  }
+  /** Features (charts, karaoke, …) register spots once the roof mesh exists. */
+  function onReady(fn: (r: Rooftop) => void) {
+    if (roof) fn(roof);
+    else ready.push(fn);
   }
   /** How many floors the roof stands on: every one that's built. */
   function roofFloors(): number {
@@ -55,5 +63,5 @@ export function installRooftop(ctx: Ctx, deps: RooftopDeps) {
     }
   });
 
-  return { roof: () => roof, theRoof, roofFloors, syncRoof, djAt };
+  return { roof: () => roof, theRoof, onReady, roofFloors, syncRoof, djAt };
 }
